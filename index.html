@@ -1,202 +1,280 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>INVENTARIO LIBRERIA ANIA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       margin: 0;
-      padding: 20px;
-      background-color: transparent;
-      color: #00ffee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      backdrop-filter: blur(8px);
+      font-family: 'Segoe UI', sans-serif;
+      background: transparent;
+      color: #fff;
+      backdrop-filter: blur(10px);
     }
-
     h1 {
       text-align: center;
-      color: #00ffd0;
-      text-shadow: 0 0 5px #0ff;
+      font-size: 2em;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+      margin-top: 1em;
     }
-
+    #productos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1em;
+      padding: 1em;
+    }
     .producto {
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 12px;
-      padding: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 10px #00ffd0aa;
+      background: rgba(0,0,0,0.5);
+      border: 2px solid #00ffff;
+      border-radius: 15px;
+      padding: 1em;
+      text-align: center;
+      box-shadow: 0 0 10px #00ffff;
     }
-
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 5px;
+      background: linear-gradient(145deg, #00ffff, #00cccc);
       border: none;
-      border-radius: 10px;
-      background: linear-gradient(to right, #0ff, #08f);
-      color: black;
+      color: #000;
       font-weight: bold;
-      box-shadow: 0 6px #007;
+      padding: 0.6em 1.2em;
+      border-radius: 10px;
       cursor: pointer;
-      transition: all 0.2s;
+      box-shadow: 0 4px #008080;
+      transition: transform 0.2s;
     }
-
-    button:active {
-      transform: translateY(2px);
-      box-shadow: 0 4px #007;
+    button:hover {
+      transform: scale(1.05);
     }
-
-    .alerta {
+    #alerta {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(255, 0, 0, 0.8);
-      padding: 15px;
-      border-radius: 12px;
+      bottom: 1em;
+      right: 1em;
+      background: #ff0040;
       color: white;
-      box-shadow: 0 0 10px red;
+      padding: 1em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ff0040;
+      display: none;
       z-index: 1000;
     }
-
-    .minimizada {
-      background: rgba(255, 0, 0, 0.6);
-      padding: 10px;
+    #boton-reabrir {
+      position: fixed;
+      bottom: 1em;
+      right: 1em;
+      background: #ffaa00;
+      padding: 0.5em 1em;
+      border-radius: 8px;
+      display: none;
+      z-index: 1000;
       cursor: pointer;
+      font-weight: bold;
     }
-
-    input[type="file"] {
-      margin: 10px 0;
-      color: white;
+    #menu {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin: 1em;
+      flex-wrap: wrap;
+    }
+    input[type=file] {
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <h1>INVENTARIO LIBRERIA ANIA</h1>
-  <input type="file" id="archivoExcel" />
-  <div id="productos"></div>
-  <button onclick="window.open('vender_celular.html', '_blank')">Vender en celular</button>
 
-  <div id="alerta-container"></div>
+<h1>INVENTARIO LIBRERIA ANIA</h1>
 
-  <script>
-    const minimo = 2;
-    const maximo = 12;
-    let productos = [];
+<div id="menu">
+  <button id="btn-vender-celular">Vender en celular</button>
+  <label>
+    <input type="file" id="input-excel" accept=".xlsx, .xls" />
+    Subir Excel
+  </label>
+</div>
 
-    function cargarProductos() {
-      const almacenados = localStorage.getItem('productos');
-      if (almacenados) {
-        productos = JSON.parse(almacenados);
-      } else {
-        productos = [
-          { id: 1, nombre: "Producto 1", stock: 12 },
-          { id: 2, nombre: "Producto 2", stock: 12 },
-          { id: 3, nombre: "Producto 3", stock: 12 }
-        ];
-      }
-      localStorage.setItem('productos', JSON.stringify(productos));
-    }
+<div id="productos"></div>
 
-    function renderProductos() {
-      const contenedor = document.getElementById('productos');
-      contenedor.innerHTML = '';
-      productos.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'producto';
-        div.innerHTML = `
-          <strong>${p.nombre}</strong><br>
-          Stock: ${p.stock}<br>
-          <button onclick="vender(${p.id})">Vender</button>
-        `;
-        contenedor.appendChild(div);
-      });
-    }
+<div id="alerta">
+  <span id="alerta-mensaje"></span><br>
+  <button id="btn-minimizar">Minimizar</button>
+  <button id="btn-cerrar">Cerrar</button>
+</div>
 
-    function vender(id) {
-      const producto = productos.find(p => p.id === id);
-      if (producto.stock > 0) {
-        producto.stock--;
-        if (producto.stock <= minimo) mostrarAlerta(producto);
-        guardarProductos();
-        renderProductos();
-      }
-    }
+<div id="boton-reabrir">🔔 Ver alerta</div>
 
-    function mostrarAlerta(producto) {
-      if (document.getElementById('alerta-' + producto.id)) return;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+  const minimo = 2;
+  const maximo = 12;
+  let productos = [];
+  let alertaAbierta = false;
+  let alertaMinimizada = false;
+  let alertaProducto = null;
+  const synth = window.speechSynthesis;
 
-      const alerta = document.createElement('div');
-      alerta.id = 'alerta-' + producto.id;
-      alerta.className = 'alerta';
-      alerta.innerHTML = `
-        <div><strong>ALERTA:</strong> ${producto.nombre} está en stock mínimo (${producto.stock})</div>
-        <button onclick="cerrarAlerta(${producto.id})">Cerrar</button>
-        <button onclick="minimizarAlerta(${producto.id})">Minimizar</button>
-      `;
-      document.getElementById('alerta-container').appendChild(alerta);
+  const divProductos = document.getElementById('productos');
+  const alerta = document.getElementById('alerta');
+  const alertaMensaje = document.getElementById('alerta-mensaje');
+  const btnMinimizar = document.getElementById('btn-minimizar');
+  const btnCerrar = document.getElementById('btn-cerrar');
+  const botonReabrir = document.getElementById('boton-reabrir');
+  const btnVenderCelular = document.getElementById('btn-vender-celular');
+  const inputExcel = document.getElementById('input-excel');
 
-      let count = 0;
-      const utterance = new SpeechSynthesisUtterance(`${producto.nombre} está en stock mínimo con ${producto.stock} unidades.`);
-      utterance.lang = "es-ES";
-      const speakLoop = () => {
-        if (count < 3) {
-          window.speechSynthesis.speak(utterance);
-          count++;
-          setTimeout(speakLoop, 2000);
-        }
-      };
-      speakLoop();
-    }
+  function guardarProductos() {
+    localStorage.setItem('productos', JSON.stringify(productos));
+  }
 
-    function cerrarAlerta(id) {
-      const alerta = document.getElementById('alerta-' + id);
-      if (alerta) alerta.remove();
-      productos = productos.map(p => p.id === id ? { ...p, stock: maximo } : p);
+  function inicializarProductos() {
+    const datos = localStorage.getItem('productos');
+    if (datos) {
+      productos = JSON.parse(datos);
+    } else {
+      productos = [
+        {id: 1, nombre: "Cuaderno", stock: 10},
+        {id: 2, nombre: "Lápiz", stock: 12},
+        {id: 3, nombre: "Borrador", stock: 8}
+      ];
       guardarProductos();
-      renderProductos();
     }
+  }
 
-    function minimizarAlerta(id) {
-      const alerta = document.getElementById('alerta-' + id);
-      if (alerta) {
-        alerta.innerHTML = `<div class="minimizada" onclick="restaurarAlerta(${id})">Alerta minimizada (Producto ${id})</div>`;
-      }
-    }
-
-    function restaurarAlerta(id) {
-      const producto = productos.find(p => p.id === id);
-      cerrarAlerta(id); // para eliminar y regenerar
-      mostrarAlerta(producto);
-    }
-
-    function guardarProductos() {
-      localStorage.setItem('productos', JSON.stringify(productos));
-    }
-
-    document.getElementById('archivoExcel').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const lines = event.target.result.split('\n');
-        productos = lines.map((line, index) => {
-          const [nombre, stock] = line.split(',');
-          return { id: index + 1, nombre: nombre.trim(), stock: Math.min(parseInt(stock.trim()), maximo) || maximo };
-        });
-        guardarProductos();
-        renderProductos();
-      };
-      reader.readAsText(file);
+  function renderizarProductos() {
+    divProductos.innerHTML = "";
+    productos.forEach(prod => {
+      const div = document.createElement('div');
+      div.className = "producto";
+      div.innerHTML = `
+        <h3>${prod.nombre}</h3>
+        <p>Stock: ${prod.stock}</p>
+        <button onclick="vender(${prod.id})">Vender</button>
+      `;
+      divProductos.appendChild(div);
     });
+  }
 
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'productos') {
-        productos = JSON.parse(e.newValue);
-        renderProductos();
+  function vender(id) {
+    const p = productos.find(x => x.id === id);
+    if (p && p.stock > 0) {
+      p.stock--;
+      guardarProductos();
+      renderizarProductos();
+      checarAlerta();
+    }
+  }
+
+  function checarAlerta() {
+    const p = productos.find(p => p.stock <= minimo);
+    if (p && (!alertaAbierta || alertaProducto?.id !== p.id)) {
+      mostrarAlerta(p);
+    }
+  }
+
+  function mostrarAlerta(p) {
+    alertaProducto = p;
+    alertaMensaje.textContent = `⚠️ ${p.nombre} tiene stock bajo (${p.stock})`;
+    alerta.style.display = 'block';
+    alertaAbierta = true;
+    alertaMinimizada = false;
+    botonReabrir.style.display = 'none';
+    reproducirAlerta(`${p.nombre} tiene stock bajo. Quedan ${p.stock} unidades.`);
+  }
+
+  function reproducirAlerta(mensaje) {
+    if (synth.speaking) synth.cancel();
+    for (let i = 0; i < 3; i++) {
+      const utter = new SpeechSynthesisUtterance(mensaje);
+      utter.rate = 1;
+      utter.pitch = 1;
+      utter.lang = 'es-ES';
+      synth.speak(utter);
+    }
+  }
+
+  function cerrarAlerta() {
+    alerta.style.display = 'none';
+    alertaAbierta = false;
+    alertaMinimizada = false;
+    alertaProducto = null;
+    if (synth.speaking) synth.cancel();
+  }
+
+  btnCerrar.onclick = cerrarAlerta;
+
+  btnMinimizar.onclick = () => {
+    alerta.style.display = 'none';
+    alertaAbierta = false;
+    alertaMinimizada = true;
+    botonReabrir.style.display = 'block';
+    if (synth.speaking) synth.cancel();
+  };
+
+  botonReabrir.onclick = () => {
+    if (alertaProducto) {
+      alerta.style.display = 'block';
+      alertaAbierta = true;
+      alertaMinimizada = false;
+      botonReabrir.style.display = 'none';
+      reproducirAlerta(`${alertaProducto.nombre} tiene stock bajo. Quedan ${alertaProducto.stock} unidades.`);
+    }
+  };
+
+  btnVenderCelular.onclick = () => {
+    window.open('vender_celular.html', '_blank');
+  };
+
+  inputExcel.onchange = (evt) => {
+    const file = evt.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet, {header:1});
+      productos = [];
+      for(let i=1; i<json.length; i++) {
+        const nombre = json[i][0];
+        let stock = parseInt(json[i][1]);
+        if (nombre && !isNaN(stock)) {
+          stock = Math.min(Math.max(stock, minimo), maximo);
+          productos.push({id: i, nombre, stock});
+        }
       }
-    });
+      guardarProductos();
+      renderizarProductos();
+      checarAlerta();
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
-    cargarProductos();
-    renderProductos();
-  </script>
+  // Escucha de cambios en localStorage desde otras pestañas
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'productos') {
+      productos = JSON.parse(e.newValue);
+      renderizarProductos();
+      checarAlerta();
+    }
+  });
+
+  // Revisión periódica por seguridad
+  setInterval(() => {
+    const actual = JSON.parse(localStorage.getItem('productos') || '[]');
+    if (JSON.stringify(actual) !== JSON.stringify(productos)) {
+      productos = actual;
+      renderizarProductos();
+      checarAlerta();
+    }
+  }, 3000);
+
+  // Inicialización
+  inicializarProductos();
+  renderizarProductos();
+  checarAlerta();
+
+</script>
 </body>
 </html>
