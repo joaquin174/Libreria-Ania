@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>INVENTARIO LIBRERIA ANIA</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: transparent;
+      color: #00ffee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      text-align: center;
+      color: #00ffd0;
+      text-shadow: 0 0 5px #0ff;
+    }
+
+    .producto {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 10px #00ffd0aa;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(to right, #0ff, #08f);
+      color: black;
+      font-weight: bold;
+      box-shadow: 0 6px #007;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px #007;
+    }
+
+    .alerta {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 0, 0, 0.8);
+      padding: 15px;
+      border-radius: 12px;
+      color: white;
+      box-shadow: 0 0 10px red;
+      z-index: 1000;
+    }
+
+    .minimizada {
+      background: rgba(255, 0, 0, 0.6);
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      margin: 10px 0;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>INVENTARIO LIBRERIA ANIA</h1>
+  <input type="file" id="archivoExcel" />
+  <div id="productos"></div>
+  <button onclick="window.open('vender_celular.html', '_blank')">Vender en celular</button>
+
+  <div id="alerta-container"></div>
+
+  <script>
+    const minimo = 2;
+    const maximo = 12;
+    let productos = [];
+
+    function cargarProductos() {
+      const almacenados = localStorage.getItem('productos');
+      if (almacenados) {
+        productos = JSON.parse(almacenados);
+      } else {
+        productos = [
+          { id: 1, nombre: "Producto 1", stock: 12 },
+          { id: 2, nombre: "Producto 2", stock: 12 },
+          { id: 3, nombre: "Producto 3", stock: 12 }
+        ];
+      }
+      localStorage.setItem('productos', JSON.stringify(productos));
+    }
+
+    function renderProductos() {
+      const contenedor = document.getElementById('productos');
+      contenedor.innerHTML = '';
+      productos.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'producto';
+        div.innerHTML = `
+          <strong>${p.nombre}</strong><br>
+          Stock: ${p.stock}<br>
+          <button onclick="vender(${p.id})">Vender</button>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function vender(id) {
+      const producto = productos.find(p => p.id === id);
+      if (producto.stock > 0) {
+        producto.stock--;
+        if (producto.stock <= minimo) mostrarAlerta(producto);
+        guardarProductos();
+        renderProductos();
+      }
+    }
+
+    function mostrarAlerta(producto) {
+      if (document.getElementById('alerta-' + producto.id)) return;
+
+      const alerta = document.createElement('div');
+      alerta.id = 'alerta-' + producto.id;
+      alerta.className = 'alerta';
+      alerta.innerHTML = `
+        <div><strong>ALERTA:</strong> ${producto.nombre} está en stock mínimo (${producto.stock})</div>
+        <button onclick="cerrarAlerta(${producto.id})">Cerrar</button>
+        <button onclick="minimizarAlerta(${producto.id})">Minimizar</button>
+      `;
+      document.getElementById('alerta-container').appendChild(alerta);
+
+      let count = 0;
+      const utterance = new SpeechSynthesisUtterance(`${producto.nombre} está en stock mínimo con ${producto.stock} unidades.`);
+      utterance.lang = "es-ES";
+      const speakLoop = () => {
+        if (count < 3) {
+          window.speechSynthesis.speak(utterance);
+          count++;
+          setTimeout(speakLoop, 2000);
+        }
+      };
+      speakLoop();
+    }
+
+    function cerrarAlerta(id) {
+      const alerta = document.getElementById('alerta-' + id);
+      if (alerta) alerta.remove();
+      productos = productos.map(p => p.id === id ? { ...p, stock: maximo } : p);
+      guardarProductos();
+      renderProductos();
+    }
+
+    function minimizarAlerta(id) {
+      const alerta = document.getElementById('alerta-' + id);
+      if (alerta) {
+        alerta.innerHTML = `<div class="minimizada" onclick="restaurarAlerta(${id})">Alerta minimizada (Producto ${id})</div>`;
+      }
+    }
+
+    function restaurarAlerta(id) {
+      const producto = productos.find(p => p.id === id);
+      cerrarAlerta(id); // para eliminar y regenerar
+      mostrarAlerta(producto);
+    }
+
+    function guardarProductos() {
+      localStorage.setItem('productos', JSON.stringify(productos));
+    }
+
+    document.getElementById('archivoExcel').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const lines = event.target.result.split('\n');
+        productos = lines.map((line, index) => {
+          const [nombre, stock] = line.split(',');
+          return { id: index + 1, nombre: nombre.trim(), stock: Math.min(parseInt(stock.trim()), maximo) || maximo };
+        });
+        guardarProductos();
+        renderProductos();
+      };
+      reader.readAsText(file);
+    });
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'productos') {
+        productos = JSON.parse(e.newValue);
+        renderProductos();
+      }
+    });
+
+    cargarProductos();
+    renderProductos();
+  </script>
+</body>
+</html>
