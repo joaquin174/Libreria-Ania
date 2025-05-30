@@ -1,216 +1,412 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>INVENTARIO LIBRERIA ANIA</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 2em;
-      font-family: 'Segoe UI', sans-serif;
-      background: transparent;
-      color: #00ffff;
-      backdrop-filter: blur(12px);
-    }
-
-    h1 {
-      text-align: center;
-      text-shadow: 0 0 10px #00ffff;
-      margin-bottom: 1em;
-    }
-
-    .top-bar {
-      text-align: center;
-      margin-bottom: 2em;
-    }
-
-    .producto {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 1em;
-      margin-bottom: 1em;
-      border-radius: 10px;
-      box-shadow: 0 0 8px #00ffff;
-    }
-
-    button {
-      background: linear-gradient(145deg, #00ffff, #00cccc);
-      border: none;
-      border-radius: 10px;
-      padding: 0.6em 1.2em;
-      color: #003333;
-      font-weight: bold;
-      box-shadow: 0 4px #008080;
-      cursor: pointer;
-    }
-
-    #alertas {
-      position: fixed;
-      bottom: 1em;
-      right: 1em;
-      max-width: 300px;
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-
-    .alerta {
-      background: rgba(255, 0, 0, 0.9);
-      color: #fff;
-      margin-top: 1em;
-      padding: 1em;
-      border-radius: 10px;
-      box-shadow: 0 0 10px red;
-      font-weight: bold;
-      animation: aparecer 0.3s ease;
-    }
-
-    @keyframes aparecer {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .alerta button {
-      margin-top: 0.5em;
-      background: #fff;
-      color: #b30000;
-      box-shadow: none;
-      padding: 0.4em 0.8em;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>INVENTARIO LIBRERIA ANIA</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 2em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('https://i.ibb.co/4ZTTVkgx/papeleria-1-66fe77df-9580-4bae-9e3c-4ce0f59fa290.webp') no-repeat center center fixed;
+    background-size: cover;
+    color: #00ffff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  h1 {
+    text-align: center;
+    text-shadow: 0 0 6px #00ffff;
+  }
+  #uploadExcel {
+    display: block;
+    margin: 1em auto;
+    padding: 0.5em 1em;
+    font-size: 1rem;
+    cursor: pointer;
+    background: linear-gradient(145deg, #00bcd4, #0097a7);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 4px 4px 6px #007c91, -4px -4px 6px #00d8ff;
+    transition: background 0.3s ease;
+  }
+  #uploadExcel:hover {
+    background: linear-gradient(145deg, #0097a7, #00bcd4);
+  }
+  #btnOpenCell {
+    display: block;
+    margin: 1em auto 2em auto;
+    padding: 0.5em 1.5em;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background: linear-gradient(145deg, #ff4081, #f50057);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 5px 5px 8px #b0003a, -5px -5px 8px #ff5983;
+    transition: background 0.3s ease;
+  }
+  #btnOpenCell:hover {
+    background: linear-gradient(145deg, #f50057, #ff4081);
+  }
+  table {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto 2em auto;
+    border-collapse: collapse;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 15px #00ffffaa;
+  }
+  th, td {
+    padding: 12px 15px;
+    text-align: center;
+    color: #00ffff;
+    border-bottom: 1px solid #00ffff33;
+  }
+  th {
+    background-color: rgba(0, 188, 212, 0.8);
+    text-shadow: 0 0 3px #00e5ff;
+  }
+  button.vender-btn {
+    padding: 6px 12px;
+    background: linear-gradient(145deg, #2196f3, #0d47a1);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 3px 3px 6px #0b3c83, -3px -3px 6px #42a5f5;
+    transition: background 0.3s ease;
+  }
+  button.vender-btn:hover {
+    background: linear-gradient(145deg, #0d47a1, #2196f3);
+  }
+  /* Alertas en esquina inferior derecha */
+  #alertContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    max-width: 320px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .alert {
+    background: rgba(0, 188, 212, 0.9);
+    border-radius: 12px;
+    color: #001f25;
+    padding: 12px 16px;
+    box-shadow: 0 0 15px #00e5ff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1rem;
+    user-select: none;
+  }
+  .alert span {
+    flex: 1;
+    margin-right: 10px;
+  }
+  .alert button {
+    margin-left: 5px;
+    padding: 4px 10px;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px #008ba3, -2px -2px 5px #00ffff;
+    background: linear-gradient(145deg, #00acc1, #008ba3);
+    color: #001f25;
+    transition: background 0.3s ease;
+  }
+  .alert button:hover {
+    background: linear-gradient(145deg, #008ba3, #00acc1);
+  }
+  /* Botón para reabrir alerta minimizada */
+  #reopenAlertBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(145deg, #ff4081, #f50057);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 12px 18px;
+    cursor: pointer;
+    box-shadow: 5px 5px 8px #b0003a, -5px -5px 8px #ff5983;
+    display: none;
+    z-index: 10000;
+  }
+</style>
 </head>
 <body>
 
-  <div class="top-bar">
-    <h1>INVENTARIO LIBRERIA ANIA</h1>
-    <button onclick="window.open('vender_celular.html', '_blank')">Vender en celular</button>
-  </div>
+<h1>INVENTARIO LIBRERIA ANIA</h1>
 
-  <div id="productos"></div>
-  <div id="alertas"></div>
+<input type="file" id="uploadExcel" accept=".xlsx,.xls" />
 
-  <script>
-    const MINIMO = 2;
-    const MAXIMO = 12;
-    let productos = [
-      { id: 1, nombre: "Producto 1", stock: 12 },
-      { id: 2, nombre: "Producto 2", stock: 12 },
-      { id: 3, nombre: "Producto 3", stock: 12 }
-    ];
+<button id="btnOpenCell">Vender en Celular</button>
 
-    let alertasActivas = new Set();
-    const productosDiv = document.getElementById('productos');
-    const alertasDiv = document.getElementById('alertas');
+<table id="productosTable">
+  <thead>
+    <tr><th>Producto</th><th>Stock</th><th>Acción</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-    function guardarProductos() {
-      localStorage.setItem('productos', JSON.stringify(productos));
+<div id="alertContainer"></div>
+<button id="reopenAlertBtn">Mostrar Alertas</button>
+
+<script>
+(() => {
+  const MIN_STOCK = 2;
+  const MAX_STOCK = 12;
+
+  let productos = [
+    { id: 1, nombre: 'Cuaderno', stock: 12 },
+    { id: 2, nombre: 'Lápiz', stock: 12 },
+    { id: 3, nombre: 'Bolígrafo', stock: 12 },
+  ];
+
+  const alertContainer = document.getElementById('alertContainer');
+  const reopenAlertBtn = document.getElementById('reopenAlertBtn');
+  const productosTableBody = document.querySelector('#productosTable tbody');
+  const uploadExcel = document.getElementById('uploadExcel');
+  const btnOpenCell = document.getElementById('btnOpenCell');
+
+  // Alerta estado para controlar
+  const alertStates = {};
+
+  // Speech synthesis setup
+  const synth = window.speechSynthesis;
+  let currentUtterance = null;
+
+  function speak(text) {
+    if (synth.speaking) {
+      synth.cancel();
     }
-
-    function cargarProductos() {
-      const data = localStorage.getItem('productos');
-      if (data) {
-        productos = JSON.parse(data);
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.volume = 1;
+    currentUtterance = utterance;
+    // Repetir 3 veces con pausas
+    let count = 0;
+    utterance.onend = () => {
+      count++;
+      if (count < 3) {
+        synth.speak(utterance);
       }
-    }
+    };
+    synth.speak(utterance);
+  }
 
-    function renderProductos() {
-      productosDiv.innerHTML = '';
-      productos.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'producto';
-        div.innerHTML = `
-          <span>${p.nombre} - Stock: ${p.stock}</span>
-          <button onclick="vender(${p.id})">Vender</button>
-        `;
-        productosDiv.appendChild(div);
-      });
-    }
+  function stopSpeaking() {
+    if (synth.speaking) synth.cancel();
+  }
 
-    function vender(id) {
-      const p = productos.find(prod => prod.id === id);
-      if (p && p.stock > MINIMO) {
-        p.stock--;
-        guardarProductos();
-        renderProductos();
-        verificarAlerta(p);
-      }
+  // Guardar y cargar en localStorage para sincronizar con segunda pagina
+  function saveProductos() {
+    localStorage.setItem('productos', JSON.stringify(productos));
+  }
+  function loadProductos() {
+    const data = localStorage.getItem('productos');
+    if (data) {
+      productos = JSON.parse(data);
     }
+  }
 
-    function verificarAlerta(p) {
-      if (p.stock <= MINIMO && !alertasActivas.has(p.id)) {
-        crearAlerta(p);
-        alertasActivas.add(p.id);
-      }
-    }
-
-    function crearAlerta(p) {
-      const div = document.createElement('div');
-      div.className = 'alerta';
-      div.id = `alerta-${p.id}`;
-      div.innerHTML = `
-        🔔 ALERTA: ${p.nombre} en stock mínimo (${p.stock})<br>
-        <button onclick="cerrarAlerta(${p.id})">Cerrar y reiniciar</button>
-      `;
-      alertasDiv.appendChild(div);
-      reproducirAlertaVoz(p);
-    }
-
-    function cerrarAlerta(id) {
-      const p = productos.find(prod => prod.id === id);
-      if (p) {
-        p.stock = MAXIMO;
-        guardarProductos();
-        renderProductos();
-      }
-      const alerta = document.getElementById(`alerta-${id}`);
-      if (alerta) alerta.remove();
-      alertasActivas.delete(id);
-      speechSynthesis.cancel();
-    }
-
-    function reproducirAlertaVoz(p) {
-      let count = 0;
-      const mensaje = new SpeechSynthesisUtterance(`Alerta de inventario: Producto ${p.nombre}, quedan ${p.stock} unidades`);
-      mensaje.onend = () => {
-        count++;
-        if (count < 3) speechSynthesis.speak(mensaje);
-      };
-      speechSynthesis.speak(mensaje);
-    }
-
-    // Sincronización desde la otra página
-    window.addEventListener('storage', e => {
-      if (e.key === 'productos') {
-        cargarProductos();
-        renderProductos();
-        productos.forEach(p => verificarAlerta(p));
-      }
-      if (e.key === 'alertaProducto') {
-        const alerta = JSON.parse(localStorage.getItem('alertaProducto'));
-        if (alerta && alerta.stock <= MINIMO && !alertasActivas.has(alerta.id)) {
-          const p = productos.find(prod => prod.id === alerta.id);
-          if (p) {
-            crearAlerta(p);
-            alertasActivas.add(p.id);
-          }
-        }
-      }
+  function renderProductos() {
+    productosTableBody.innerHTML = '';
+    productos.forEach(prod => {
+      const tr = document.createElement('tr');
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = prod.nombre;
+      const tdStock = document.createElement('td');
+      tdStock.textContent = prod.stock;
+      const tdAccion = document.createElement('td');
+      const btnVender = document.createElement('button');
+      btnVender.classList.add('vender-btn');
+      btnVender.textContent = 'Vender';
+      btnVender.disabled = prod.stock <= MIN_STOCK;
+      btnVender.addEventListener('click', () => venderProducto(prod.id));
+      tdAccion.appendChild(btnVender);
+      tr.appendChild(tdNombre);
+      tr.appendChild(tdStock);
+      tr.appendChild(tdAccion);
+      productosTableBody.appendChild(tr);
     });
+  }
 
-    function iniciar() {
-      cargarProductos();
-      renderProductos();
-      productos.forEach(p => {
-        if (p.stock <= MINIMO) verificarAlerta(p);
-      });
+  // Crear o actualizar alerta individual
+  function crearAlerta(prod) {
+    if (alertStates[prod.id] && alertStates[prod.id].visible) return; // ya visible
+
+    // Crear alerta
+    const alertDiv = document.createElement('div');
+    alertDiv.classList.add('alert');
+    alertDiv.id = 'alert-' + prod.id;
+
+    const span = document.createElement('span');
+    span.textContent = `¡Atención! Producto "${prod.nombre}" con stock bajo: ${prod.stock}`;
+
+    const btnMin = document.createElement('button');
+    btnMin.textContent = 'Minimizar';
+
+    const btnCerrar = document.createElement('button');
+    btnCerrar.textContent = 'Cerrar';
+
+    alertDiv.appendChild(span);
+    alertDiv.appendChild(btnMin);
+    alertDiv.appendChild(btnCerrar);
+
+    alertContainer.appendChild(alertDiv);
+
+    alertStates[prod.id] = { visible: true, minimized: false, element: alertDiv };
+
+    speak(`Producto ${prod.nombre} con stock bajo, cantidad ${prod.stock}`);
+
+    btnMin.onclick = () => {
+      alertDiv.style.display = 'none';
+      alertStates[prod.id].minimized = true;
+      alertStates[prod.id].visible = false;
+      checkReopenAlertBtn();
+    };
+
+    btnCerrar.onclick = () => {
+      stopSpeaking();
+      alertContainer.removeChild(alertDiv);
+      alertStates[prod.id] = { visible: false, minimized: false, element: null };
+      reiniciarStock(prod.id);
+      checkReopenAlertBtn();
+    };
+
+    checkReopenAlertBtn();
+  }
+
+  // Verifica si hay alertas minimizadas y muestra el boton
+  function checkReopenAlertBtn() {
+    const anyMinimized = Object.values(alertStates).some(a => a.minimized);
+    reopenAlertBtn.style.display = anyMinimized ? 'block' : 'none';
+  }
+
+  reopenAlertBtn.onclick = () => {
+    // Reabrir todas las alertas minimizadas
+    for (const id in alertStates) {
+      if (alertStates[id].minimized) {
+        alertStates[id].element.style.display = 'flex';
+        alertStates[id].visible = true;
+        alertStates[id].minimized = false;
+      }
     }
+    reopenAlertBtn.style.display = 'none';
+  };
 
-    iniciar();
-  </script>
+  // Vender producto
+  function venderProducto(id) {
+    const prod = productos.find(p => p.id === id);
+    if (!prod) return;
+    if (prod.stock > MIN_STOCK) {
+      prod.stock--;
+      saveProductos();
+      renderProductos();
+      checkAlert(prod);
+      broadcastUpdate();
+    }
+  }
+
+  // Revisar alerta
+  function checkAlert(prod) {
+    if (prod.stock <= MIN_STOCK) {
+      crearAlerta(prod);
+    } else {
+      // Si stock subio, cerrar alerta si existe
+      const alertInfo = alertStates[prod.id];
+      if (alertInfo && alertInfo.element) {
+        alertContainer.removeChild(alertInfo.element);
+        alertStates[prod.id] = { visible: false, minimized: false, element: null };
+        checkReopenAlertBtn();
+      }
+    }
+  }
+
+  // Reiniciar stock al maximo y actualizar tabla
+  function reiniciarStock(id) {
+    const prod = productos.find(p => p.id === id);
+    if (!prod) return;
+    prod.stock = MAX_STOCK;
+    saveProductos();
+    renderProductos();
+  }
+
+  // BroadcastChannel para sincronizar con segunda pagina
+  const bc = new BroadcastChannel('inventario_libreria_ania');
+
+  function broadcastUpdate() {
+    bc.postMessage({ type: 'update', productos });
+  }
+
+  bc.onmessage = (ev) => {
+    if (ev.data.type === 'update' && ev.data.productos) {
+      productos = ev.data.productos;
+      saveProductos();
+      renderProductos();
+      // actualizar alertas
+      productos.forEach(prod => checkAlert(prod));
+    }
+  };
+
+  // Cargar desde Excel
+  uploadExcel.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const data = new Uint8Array(ev.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+      // jsonData esperado: [{nombre: "Producto", stock: 10}, ...]
+      if (jsonData.length > 0) {
+        productos = jsonData.map((item, i) => ({
+          id: i + 1,
+          nombre: item.nombre || `Producto ${i+1}`,
+          stock: Number(item.stock) || MAX_STOCK
+        }));
+        saveProductos();
+        renderProductos();
+        // actualizar alertas
+        productos.forEach(prod => checkAlert(prod));
+        broadcastUpdate();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = ''; // reset file input
+  });
+
+  btnOpenCell.onclick = () => {
+    window.open('vender_celular.html', '_blank');
+  };
+
+  // Init
+  loadProductos();
+  renderProductos();
+  productos.forEach(prod => checkAlert(prod));
+  checkReopenAlertBtn();
+
+})();
+</script>
 
 </body>
 </html>
