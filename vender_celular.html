@@ -1,187 +1,219 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Vender - Librería Ania</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: transparent;
-      color: #00ffff;
-      backdrop-filter: blur(15px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1em;
-      min-height: 100vh;
-    }
-    h2 {
-      text-align: center;
-      text-shadow: 0 0 10px #00ffff;
-      margin-bottom: 1em;
-      font-weight: 900;
-      font-size: 1.8em;
-    }
-    select {
-      width: 90%;
-      padding: 1em;
-      font-size: 1.2em;
-      border-radius: 12px;
-      border: 2px solid #00ffff;
-      background: rgba(0,0,0,0.6);
-      color: #00ffff;
-      box-shadow: 0 0 15px #00ffff inset;
-      margin-bottom: 1em;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      cursor: pointer;
-    }
-    select option[disabled] {
-      color: #888;
-    }
-    button {
-      width: 90%;
-      padding: 1em;
-      font-size: 1.3em;
-      font-weight: bold;
-      color: #000;
-      background: linear-gradient(145deg, #00ffff, #00cccc);
-      border: none;
-      border-radius: 15px;
-      box-shadow: 0 5px #008080;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 1em;
-      user-select: none;
-    }
-    button:active {
-      box-shadow: none;
-      transform: translateY(4px);
-    }
-    button:disabled {
-      background: #444;
-      color: #666;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
-    #descargar {
-      background: linear-gradient(145deg, #ff6a00, #ff8c00);
-      color: #fff;
-      box-shadow: 0 5px #c14a00;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Vender en Celular - Librería Ania</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: transparent;
+    color: #0ff;
+    backdrop-filter: blur(18px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 1em;
+  }
+  h1 {
+    font-weight: 900;
+    text-shadow: 0 0 20px #0ff;
+    margin-bottom: 1em;
+    text-align: center;
+  }
+  select {
+    width: 90%;
+    max-width: 400px;
+    padding: 1em;
+    border-radius: 15px;
+    background: rgba(0, 255, 255, 0.15);
+    color: #00ffff;
+    border: 2px solid #00ffff;
+    font-size: 1.3em;
+    font-weight: 700;
+    text-shadow: 0 0 5px #0ff;
+    outline: none;
+    box-shadow: 0 5px 10px #00ffffaa inset;
+    user-select: none;
+  }
+  button.vender-general {
+    margin-top: 2em;
+    padding: 1em 2em;
+    border: none;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #00ffff, #00cccc);
+    box-shadow: 0 8px #008080;
+    font-size: 1.3em;
+    font-weight: 900;
+    color: black;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+  button.vender-general:active {
+    box-shadow: none;
+    transform: translateY(5px);
+  }
+  button.descargar-reporte {
+    margin-top: 1em;
+    padding: 0.6em 1.5em;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #ff00ff, #cc00cc);
+    box-shadow: 0 5px #800080;
+    font-size: 1em;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+  button.descargar-reporte:active {
+    box-shadow: none;
+    transform: translateY(3px);
+  }
+  #mensaje {
+    margin-top: 1em;
+    font-weight: 700;
+    color: #ff55ff;
+    text-shadow: 0 0 5px #ff55ff;
+  }
+</style>
 </head>
 <body>
 
-<h2>Vender en celular</h2>
+<h1>Vender en Celular</h1>
 
 <select id="select-productos">
-  <option value="" disabled selected>No hay productos</option>
+  <option value="">Cargando productos...</option>
 </select>
 
-<button id="btn-vender">Vender</button>
-<button id="descargar">Descargar reporte stock mínimo</button>
+<button class="vender-general" id="btn-vender">Vender</button>
+<button class="descargar-reporte" id="btn-reporte">Descargar Informe Stock Mínimo</button>
+
+<div id="mensaje"></div>
 
 <script>
-  const minimo = 2;
+const MINIMO = 2;
+const MAXIMO = 12;
 
-  const selectProductos = document.getElementById('select-productos');
-  const btnVender = document.getElementById('btn-vender');
-  const btnDescargar = document.getElementById('descargar');
+let productos = [];
+const selectProductos = document.getElementById('select-productos');
+const btnVender = document.getElementById('btn-vender');
+const btnReporte = document.getElementById('btn-reporte');
+const mensaje = document.getElementById('mensaje');
 
-  let productos = [];
+function cargarProductos() {
+  const data = localStorage.getItem('productos');
+  if (data) {
+    productos = JSON.parse(data);
+  } else {
+    productos = [];
+  }
+}
 
-  function cargarProductos() {
-    const data = localStorage.getItem('productos');
-    productos = data ? JSON.parse(data) : [];
-    actualizarSelect();
+function renderProductos() {
+  selectProductos.innerHTML = '';
+  if (productos.length === 0) {
+    const opt = document.createElement('option');
+    opt.text = 'No hay productos';
+    opt.value = '';
+    selectProductos.add(opt);
+    return;
   }
 
-  function actualizarSelect() {
-    selectProductos.innerHTML = '';
-    if (productos.length === 0) {
-      const opt = document.createElement('option');
-      opt.textContent = 'No hay productos';
+  productos.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.text = `${p.nombre} - Stock: ${p.stock}`;
+    // Bloquear si stock <= minimo
+    if (p.stock <= MINIMO) {
       opt.disabled = true;
-      opt.selected = true;
-      selectProductos.appendChild(opt);
-      btnVender.disabled = true;
-      return;
+      opt.text += ' (Bloqueado - Stock mínimo)';
     }
-
-    productos.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = `${p.nombre} (Stock: ${p.stock})`;
-      // Bloquear si está en alerta (stock <= minimo)
-      if (p.stock <= minimo) {
-        opt.disabled = true;
-        opt.textContent += ' - BLOQUEADO (stock mínimo)';
-      }
-      selectProductos.appendChild(opt);
-    });
-    btnVender.disabled = false;
-    selectProductos.selectedIndex = 0;
-  }
-
-  function venderProducto() {
-    const id = parseInt(selectProductos.value);
-    if (!id) return;
-    const p = productos.find(x => x.id === id);
-    if (!p || p.stock <= minimo) return;
-    p.stock--;
-    localStorage.setItem('productos', JSON.stringify(productos));
-    cargarProductos();
-  }
-
-  function descargarReporte() {
-    const productosMinimos = productos.filter(p => p.stock <= minimo);
-    let texto = 'Productos en stock mínimo:\n\n';
-    if (productosMinimos.length === 0) texto += 'No hay productos en stock mínimo.';
-    else {
-      productosMinimos.forEach(p => {
-        texto += `- ${p.nombre}: ${p.stock} unidades\n`;
-      });
-    }
-    const blob = new Blob([texto], {type: 'text/plain'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'reporte_stock_minimo.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'productos') {
-      cargarProductos();
-    }
+    selectProductos.add(opt);
   });
+}
 
-  // Refrescar cada 3 segundos para sincronizar si fuera necesario
-  setInterval(() => {
-    const data = localStorage.getItem('productos');
-    if (data) {
-      const actual = JSON.parse(data);
-      if (JSON.stringify(actual) !== JSON.stringify(productos)) {
-        productos = actual;
-        actualizarSelect();
-      }
-    }
-  }, 3000);
+// Al vender un producto
+function venderProducto(id) {
+  const p = productos.find(x => x.id == id);
+  if (!p) {
+    mensaje.textContent = 'Producto no encontrado.';
+    return;
+  }
+  if (p.stock <= MINIMO) {
+    mensaje.textContent = 'No se puede vender. Stock mínimo alcanzado.';
+    return;
+  }
+  p.stock--;
+  guardarProductos();
+  renderProductos();
+  mensaje.textContent = `Producto "${p.nombre}" vendido. Nuevo stock: ${p.stock}`;
+  // Actualizar localStorage para la página 1 y disparar evento storage
+  localStorage.setItem('productos', JSON.stringify(productos));
+  // Enviar mensaje a página 1 para alerta si stock llegó a mínimo
+  if (p.stock <= MINIMO) {
+    // Usamos almacenamiento para disparar alerta en página 1
+    localStorage.setItem('alertaProducto', JSON.stringify({id: p.id, nombre: p.nombre, stock: p.stock}));
+  }
+}
 
-  btnVender.onclick = () => {
-    venderProducto();
-  };
+function guardarProductos() {
+  localStorage.setItem('productos', JSON.stringify(productos));
+}
 
-  btnDescargar.onclick = () => {
-    descargarReporte();
-  };
+// Descargar informe stock mínimo en TXT
+function descargarInforme() {
+  const productosMinimos = productos.filter(p => p.stock <= MINIMO);
+  if (productosMinimos.length === 0) {
+    alert('No hay productos en stock mínimo.');
+    return;
+  }
+  let texto = 'Informe Productos con Stock Mínimo\n\n';
+  productosMinimos.forEach(p => {
+    texto += `Producto: ${p.nombre}, Stock: ${p.stock}\n`;
+  });
+  const blob = new Blob([texto], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'informe_stock_minimo.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
+btnVender.addEventListener('click', () => {
+  const id = selectProductos.value;
+  if (!id) {
+    mensaje.textContent = 'Por favor seleccione un producto.';
+    return;
+  }
+  venderProducto(id);
+});
+
+btnReporte.addEventListener('click', descargarInforme);
+
+function sincronizarProductos() {
   cargarProductos();
+  renderProductos();
+}
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'productos') {
+    sincronizarProductos();
+  }
+});
+
+window.onload = () => {
+  sincronizarProductos();
+};
 </script>
+
 </body>
 </html>
