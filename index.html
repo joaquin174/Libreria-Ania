@@ -1,268 +1,195 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>INVENTARIO LIBRERIA ANIA</title>
-<style>
-  body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: transparent;
-    color: #00ffff;
-    backdrop-filter: blur(15px);
-    padding: 1em;
-  }
-  h1 {
-    text-align: center;
-    font-weight: 900;
-    text-shadow: 0 0 15px #00ffff;
-    margin-bottom: 1em;
-  }
-  .producto {
-    background: rgba(0,0,0,0.5);
-    margin: 0.5em 0;
-    padding: 1em;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 0 10px #00ffff;
-  }
-  .producto span {
-    font-size: 1.2em;
-  }
-  button.vender {
-    background: linear-gradient(145deg, #00ffff, #00cccc);
-    color: black;
-    font-weight: bold;
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 5px #008080;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.2s ease;
-  }
-  button.vender:active {
-    box-shadow: none;
-    transform: translateY(4px);
-  }
-  #alertas-container {
-    position: fixed;
-    bottom: 1em;
-    right: 1em;
-    max-width: 300px;
-    z-index: 1000;
-  }
-  .alerta-producto {
-    background: rgba(255,0,0,0.9);
-    color: white;
-    padding: 0.8em 1em;
-    margin-top: 0.6em;
-    border-radius: 12px;
-    box-shadow: 0 0 10px red;
-    font-weight: bold;
-    position: relative;
-  }
-  .alerta-producto span {
-    display: block;
-  }
-  .alerta-btn {
-    background: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.3em 0.7em;
-    font-weight: 700;
-    cursor: pointer;
-    margin-left: 0.5em;
-    color: #b30000;
-    box-shadow: 0 3px #800000;
-    user-select: none;
-    transition: all 0.2s ease;
-  }
-  .alerta-btn:active {
-    box-shadow: none;
-    transform: translateY(2px);
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>INVENTARIO LIBRERIA ANIA</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 2em;
+      font-family: 'Segoe UI', sans-serif;
+      background: transparent;
+      color: #00ffff;
+      backdrop-filter: blur(15px);
+    }
+    h1 {
+      text-align: center;
+      text-shadow: 0 0 10px #00ffff;
+    }
+    .producto {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1em;
+      border-radius: 10px;
+      margin-bottom: 1em;
+      box-shadow: 0 0 10px #00ffff;
+    }
+    button {
+      background: linear-gradient(145deg, #00ffff, #00cccc);
+      border: none;
+      border-radius: 10px;
+      padding: 0.5em 1em;
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 4px #008080;
+      cursor: pointer;
+    }
+    #alertas {
+      position: fixed;
+      bottom: 1em;
+      right: 1em;
+      max-width: 300px;
+    }
+    .alerta {
+      background: rgba(255, 0, 0, 0.9);
+      color: #fff;
+      margin-top: 1em;
+      padding: 1em;
+      border-radius: 10px;
+      box-shadow: 0 0 10px red;
+    }
+    .alerta button {
+      margin-top: 0.5em;
+      background: #fff;
+      color: #b30000;
+      box-shadow: none;
+    }
+  </style>
 </head>
 <body>
 
 <h1>INVENTARIO LIBRERIA ANIA</h1>
 
-<div id="productos-lista"></div>
-
-<div id="alertas-container"></div>
+<div id="productos"></div>
+<div id="alertas"></div>
 
 <script>
-const MINIMO = 2;
-const MAXIMO = 12;
+  const MINIMO = 2;
+  const MAXIMO = 12;
 
-// Productos iniciales ejemplo (puedes modificar o cargar Excel)
-// id único para cada producto
-let productos = [
-  { id: 1, nombre: "Producto 1", stock: 12 },
-  { id: 2, nombre: "Producto 2", stock: 12 },
-  { id: 3, nombre: "Producto 3", stock: 12 },
-];
+  let productos = [
+    { id: 1, nombre: "Producto 1", stock: 12 },
+    { id: 2, nombre: "Producto 2", stock: 12 },
+    { id: 3, nombre: "Producto 3", stock: 12 },
+  ];
 
-// Para alertas activas (por producto)
-let alertasActivas = new Set();
+  let alertasActivas = new Set();
+  const productosDiv = document.getElementById('productos');
+  const alertasDiv = document.getElementById('alertas');
 
-const productosLista = document.getElementById('productos-lista');
-const alertasContainer = document.getElementById('alertas-container');
-
-function guardarLocal() {
-  localStorage.setItem('productos', JSON.stringify(productos));
-}
-
-function cargarLocal() {
-  const data = localStorage.getItem('productos');
-  if (data) productos = JSON.parse(data);
-}
-
-function renderProductos() {
-  productosLista.innerHTML = '';
-  productos.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'producto';
-    div.innerHTML = `
-      <span>${p.nombre} - Stock: ${p.stock}</span>
-      <button class="vender" data-id="${p.id}">Vender</button>
-    `;
-    productosLista.appendChild(div);
-  });
-  // Añadir eventos a botones vender
-  document.querySelectorAll('button.vender').forEach(btn => {
-    btn.onclick = () => {
-      const id = parseInt(btn.getAttribute('data-id'));
-      venderProducto(id);
-    };
-  });
-}
-
-function venderProducto(id) {
-  const p = productos.find(x => x.id === id);
-  if (!p) return;
-  if (p.stock <= MINIMO) {
-    // ya está en alerta, no vender más
-    return;
+  function guardarProductos() {
+    localStorage.setItem('productos', JSON.stringify(productos));
   }
-  p.stock--;
-  guardarLocal();
-  renderProductos();
-  checkAlertaProducto(p);
-}
 
-// Genera o elimina alerta según stock del producto
-function checkAlertaProducto(p) {
-  if (p.stock <= MINIMO) {
-    if (!alertasActivas.has(p.id)) {
+  function cargarProductos() {
+    const data = localStorage.getItem('productos');
+    if (data) {
+      productos = JSON.parse(data);
+    }
+  }
+
+  function renderProductos() {
+    productosDiv.innerHTML = '';
+    productos.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'producto';
+      div.innerHTML = `
+        <span>${p.nombre} - Stock: ${p.stock}</span>
+        <button onclick="vender(${p.id})">Vender</button>
+      `;
+      productosDiv.appendChild(div);
+    });
+  }
+
+  function vender(id) {
+    const prod = productos.find(p => p.id === id);
+    if (prod && prod.stock > MINIMO) {
+      prod.stock--;
+      guardarProductos();
+      renderProductos();
+      verificarAlerta(prod);
+    }
+  }
+
+  function verificarAlerta(p) {
+    if (p.stock <= MINIMO && !alertasActivas.has(p.id)) {
       crearAlerta(p);
       alertasActivas.add(p.id);
     }
-  } else {
-    // Si el stock subió, eliminar alerta si existiera
-    if (alertasActivas.has(p.id)) {
-      eliminarAlerta(p.id);
-      alertasActivas.delete(p.id);
-    }
-  }
-}
-
-// Crear alerta individual para producto
-function crearAlerta(p) {
-  // Crear contenedor alerta
-  const alertaDiv = document.createElement('div');
-  alertaDiv.className = 'alerta-producto';
-  alertaDiv.id = `alerta-${p.id}`;
-  alertaDiv.innerHTML = `
-    <span>¡Alerta! Stock mínimo: ${p.nombre} - Quedan ${p.stock}</span>
-    <button class="alerta-btn" title="Cerrar y reiniciar stock">Cerrar</button>
-  `;
-  alertasContainer.appendChild(alertaDiv);
-
-  // Sonido alerta con SpeechSynthesis (3 repeticiones)
-  reproducirAlertaVoz(p);
-
-  // Botón cerrar alerta
-  alertaDiv.querySelector('button.alerta-btn').onclick = () => {
-    reiniciarStockProducto(p.id);
-    eliminarAlerta(p.id);
-    alertasActivas.delete(p.id);
-  };
-}
-
-// Eliminar alerta del DOM
-function eliminarAlerta(id) {
-  const alerta = document.getElementById(`alerta-${id}`);
-  if (alerta) alerta.remove();
-}
-
-// Reinicia el stock del producto al máximo y actualiza
-function reiniciarStockProducto(id) {
-  const p = productos.find(x => x.id === id);
-  if (!p) return;
-  p.stock = MAXIMO;
-  guardarLocal();
-  renderProductos();
-}
-
-// Voz alerta con repeticiones
-let sintetizador = window.speechSynthesis;
-let utterance;
-let alertasVozMap = new Map(); // para controlar múltiples alertas
-
-function reproducirAlertaVoz(p) {
-  if (!sintetizador) return;
-  if (alertasVozMap.has(p.id)) {
-    // Si ya está sonando, cancelar y reiniciar
-    sintetizador.cancel();
-    alertasVozMap.delete(p.id);
   }
 
-  let count = 0;
-  utterance = new SpeechSynthesisUtterance(`Atención, producto ${p.nombre}, stock mínimo, quedan ${p.stock} unidades`);
-  utterance.rate = 1;
-  utterance.onend = () => {
-    count++;
-    if (count < 3) {
-      sintetizador.speak(utterance);
-    } else {
-      alertasVozMap.delete(p.id);
-    }
-  };
-  alertasVozMap.set(p.id, utterance);
-  sintetizador.speak(utterance);
-}
+  function crearAlerta(p) {
+    const div = document.createElement('div');
+    div.className = 'alerta';
+    div.id = `alerta-${p.id}`;
+    div.innerHTML = `
+      <div>⚠️ Producto "${p.nombre}" en stock mínimo (${p.stock})</div>
+      <button onclick="cerrarAlerta(${p.id})">Cerrar y reiniciar</button>
+    `;
+    alertasDiv.appendChild(div);
+    reproducirAlertaVoz(p);
+  }
 
-// Al cargar la página
-function iniciar() {
-  cargarLocal();
-  renderProductos();
-  // Verificar alertas para productos que ya están en mínimo
-  productos.forEach(p => {
-    if (p.stock <= MINIMO) {
-      if (!alertasActivas.has(p.id)) {
-        crearAlerta(p);
-        alertasActivas.add(p.id);
+  function cerrarAlerta(id) {
+    const prod = productos.find(p => p.id === id);
+    if (prod) {
+      prod.stock = MAXIMO;
+      guardarProductos();
+      renderProductos();
+    }
+    const div = document.getElementById(`alerta-${id}`);
+    if (div) div.remove();
+    alertasActivas.delete(id);
+    if (speechSynthesis.speaking) speechSynthesis.cancel();
+  }
+
+  function reproducirAlertaVoz(p) {
+    let count = 0;
+    const msg = new SpeechSynthesisUtterance(`Alerta de inventario: Producto ${p.nombre}, quedan ${p.stock} unidades`);
+    msg.rate = 1;
+    msg.onend = () => {
+      count++;
+      if (count < 3) {
+        speechSynthesis.speak(msg);
+      }
+    };
+    speechSynthesis.speak(msg);
+  }
+
+  function iniciar() {
+    cargarProductos();
+    renderProductos();
+    productos.forEach(p => {
+      if (p.stock <= MINIMO) {
+        verificarAlerta(p);
+      }
+    });
+  }
+
+  // Reaccionar a ventas desde la segunda página
+  window.addEventListener('storage', e => {
+    if (e.key === 'productos') {
+      cargarProductos();
+      renderProductos();
+      productos.forEach(p => verificarAlerta(p));
+    }
+    if (e.key === 'alertaProducto') {
+      const alerta = JSON.parse(localStorage.getItem('alertaProducto'));
+      if (alerta && alerta.stock <= MINIMO && !alertasActivas.has(alerta.id)) {
+        const prod = productos.find(p => p.id === alerta.id);
+        if (prod) {
+          crearAlerta(prod);
+          alertasActivas.add(prod.id);
+        }
       }
     }
   });
-}
 
-window.addEventListener('storage', (e) => {
-  if (e.key === 'productos') {
-    cargarLocal();
-    renderProductos();
-    productos.forEach(p => checkAlertaProducto(p));
-  }
-});
-
-iniciar();
-
+  iniciar();
 </script>
-
 </body>
 </html>
