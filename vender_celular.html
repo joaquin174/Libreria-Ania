@@ -2,64 +2,75 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vender en Celular</title>
   <style>
     body {
       margin: 0;
-      padding: 2em;
+      padding: 2em 1em;
       font-family: 'Segoe UI', sans-serif;
       background: transparent;
       color: #0ff;
-      backdrop-filter: blur(15px);
+      backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+
     h1 {
+      font-size: 1.8em;
       text-align: center;
       text-shadow: 0 0 10px #00ffff;
+      margin-bottom: 1.5em;
     }
+
     select {
-      width: 90%;
+      width: 100%;
       max-width: 400px;
       padding: 1em;
-      margin-top: 1em;
       font-size: 1.1em;
       border-radius: 15px;
       border: 2px solid #00ffff;
-      background: rgba(0, 255, 255, 0.15);
+      background: rgba(0, 255, 255, 0.1);
       color: #00ffff;
-      box-shadow: 0 0 10px #00ffffaa;
+      box-shadow: 0 0 8px #00ffffa8;
     }
+
     button {
-      margin-top: 1.5em;
-      padding: 0.8em 1.5em;
-      font-size: 1.1em;
-      border: none;
+      margin-top: 1em;
+      padding: 0.9em 1.2em;
+      font-size: 1em;
       border-radius: 15px;
-      background: linear-gradient(145deg, #00ffff, #00cccc);
-      color: #000;
       font-weight: bold;
-      box-shadow: 0 8px #008080;
       cursor: pointer;
-      transition: all 0.2s ease;
+      border: none;
+      transition: transform 0.2s ease;
+      width: 100%;
+      max-width: 400px;
     }
+
     button:active {
-      box-shadow: none;
-      transform: translateY(5px);
+      transform: scale(0.97);
     }
-    .reporte {
-      background: linear-gradient(145deg, #ff00ff, #cc00cc);
-      box-shadow: 0 8px #800080;
-      color: white;
+
+    .btn-vender {
+      background: linear-gradient(to right, #00ffff, #00cccc);
+      color: #003333;
+      box-shadow: 0 6px #008080;
     }
+
+    .btn-reporte {
+      background: linear-gradient(to right, #ff00ff, #cc00cc);
+      color: #fff;
+      box-shadow: 0 6px #800080;
+    }
+
     #mensaje {
       margin-top: 1em;
-      font-weight: 700;
+      font-weight: bold;
       color: #ff55ff;
-      text-shadow: 0 0 5px #ff55ff;
       text-align: center;
+      text-shadow: 0 0 6px #ff55ff;
     }
   </style>
 </head>
@@ -68,119 +79,111 @@
 <h1>Vender en Celular</h1>
 
 <select id="select-productos"></select>
-<button id="btn-vender">Vender</button>
-<button id="btn-reporte" class="reporte">Descargar Informe Stock Mínimo</button>
+<button id="btn-vender" class="btn-vender">Vender</button>
+<button id="btn-reporte" class="btn-reporte">Descargar Informe de Stock Mínimo</button>
 
 <div id="mensaje"></div>
 
 <script>
-const MINIMO = 2;
-const MAXIMO = 12;
+  const MINIMO = 2;
+  const MAXIMO = 12;
 
-let productos = [];
-const selectProductos = document.getElementById('select-productos');
-const mensaje = document.getElementById('mensaje');
+  let productos = [];
+  const select = document.getElementById('select-productos');
+  const mensaje = document.getElementById('mensaje');
 
-function cargarProductos() {
-  const data = localStorage.getItem('productos');
-  productos = data ? JSON.parse(data) : [];
-}
-
-function guardarProductos() {
-  localStorage.setItem('productos', JSON.stringify(productos));
-}
-
-function renderProductos() {
-  selectProductos.innerHTML = '';
-  if (productos.length === 0) {
-    selectProductos.innerHTML = '<option>No hay productos</option>';
-    return;
+  function cargarProductos() {
+    const data = localStorage.getItem('productos');
+    productos = data ? JSON.parse(data) : [];
   }
 
-  productos.forEach(p => {
-    const option = document.createElement('option');
-    option.value = p.id;
-    option.textContent = `${p.nombre} - Stock: ${p.stock}`;
-    if (p.stock <= MINIMO) {
-      option.disabled = true;
-      option.textContent += ' (Bloqueado)';
+  function guardarProductos() {
+    localStorage.setItem('productos', JSON.stringify(productos));
+  }
+
+  function renderSelect() {
+    select.innerHTML = '';
+    if (!productos.length) {
+      select.innerHTML = '<option>No hay productos</option>';
+      return;
     }
-    selectProductos.appendChild(option);
-  });
-}
 
-function venderProducto(id) {
-  const producto = productos.find(p => p.id == id);
-  if (!producto) {
-    mensaje.textContent = 'Producto no encontrado.';
-    return;
+    productos.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id;
+      option.textContent = `${p.nombre} - Stock: ${p.stock}`;
+      if (p.stock <= MINIMO) {
+        option.disabled = true;
+        option.textContent += ' (Bloqueado)';
+      }
+      select.appendChild(option);
+    });
   }
 
-  if (producto.stock <= MINIMO) {
-    mensaje.textContent = 'No se puede vender. Stock mínimo.';
-    return;
+  function venderProducto(id) {
+    const p = productos.find(prod => prod.id == id);
+    if (!p || p.stock <= MINIMO) {
+      mensaje.textContent = 'No se puede vender este producto.';
+      return;
+    }
+
+    p.stock--;
+    guardarProductos();
+    renderSelect();
+    mensaje.textContent = `Se vendió "${p.nombre}". Stock: ${p.stock}`;
+
+    if (p.stock <= MINIMO) {
+      localStorage.setItem('alertaProducto', JSON.stringify({
+        id: p.id,
+        nombre: p.nombre,
+        stock: p.stock
+      }));
+    }
   }
 
-  producto.stock--;
-  guardarProductos();
-  renderProductos();
-  mensaje.textContent = `Vendido "${producto.nombre}". Nuevo stock: ${producto.stock}`;
-  localStorage.setItem('productos', JSON.stringify(productos));
-
-  // Si llegó a mínimo, enviar alerta a index.html
-  if (producto.stock <= MINIMO) {
-    localStorage.setItem('alertaProducto', JSON.stringify({
-      id: producto.id,
-      nombre: producto.nombre,
-      stock: producto.stock
-    }));
-  }
-}
-
-document.getElementById('btn-vender').addEventListener('click', () => {
-  const id = selectProductos.value;
-  if (!id) {
-    mensaje.textContent = 'Seleccione un producto.';
-    return;
-  }
-  venderProducto(id);
-});
-
-document.getElementById('btn-reporte').addEventListener('click', () => {
-  const minimos = productos.filter(p => p.stock <= MINIMO);
-  if (minimos.length === 0) {
-    alert('No hay productos en stock mínimo.');
-    return;
-  }
-
-  let texto = 'Informe de Productos con Stock Mínimo:\n\n';
-  minimos.forEach(p => {
-    texto += `Producto: ${p.nombre}, Stock: ${p.stock}\n`;
+  document.getElementById('btn-vender').addEventListener('click', () => {
+    const id = select.value;
+    if (!id) {
+      mensaje.textContent = 'Seleccione un producto.';
+      return;
+    }
+    venderProducto(id);
   });
 
-  const blob = new Blob([texto], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'informe_stock_minimo.txt';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-});
+  document.getElementById('btn-reporte').addEventListener('click', () => {
+    const minimos = productos.filter(p => p.stock <= MINIMO);
+    if (!minimos.length) {
+      alert('No hay productos en stock mínimo.');
+      return;
+    }
 
-// Escuchar cambios desde index.html
-window.addEventListener('storage', (e) => {
-  if (e.key === 'productos') {
+    let texto = 'Informe de Stock Mínimo:\n\n';
+    minimos.forEach(p => {
+      texto += `Producto: ${p.nombre}, Stock: ${p.stock}\n`;
+    });
+
+    const blob = new Blob([texto], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'stock_minimo.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'productos') {
+      cargarProductos();
+      renderSelect();
+    }
+  });
+
+  window.onload = () => {
     cargarProductos();
-    renderProductos();
-  }
-});
-
-window.onload = () => {
-  cargarProductos();
-  renderProductos();
-};
+    renderSelect();
+  };
 </script>
 
 </body>
