@@ -187,8 +187,6 @@
     if (synth.speaking) synth.cancel();
     for (let i = 0; i < 3; i++) {
       const utter = new SpeechSynthesisUtterance(mensaje);
-      utter.rate = 1;
-      utter.pitch = 1;
       utter.lang = 'es-ES';
       synth.speak(utter);
     }
@@ -251,7 +249,6 @@
     reader.readAsArrayBuffer(file);
   };
 
-  // Escucha de cambios en localStorage desde otras pestañas
   window.addEventListener('storage', (e) => {
     if (e.key === 'productos') {
       productos = JSON.parse(e.newValue);
@@ -260,7 +257,6 @@
     }
   });
 
-  // Revisión periódica por seguridad
   setInterval(() => {
     const actual = JSON.parse(localStorage.getItem('productos') || '[]');
     if (JSON.stringify(actual) !== JSON.stringify(productos)) {
@@ -270,7 +266,6 @@
     }
   }, 3000);
 
-  // Inicialización
   inicializarProductos();
   renderizarProductos();
   checarAlerta();
