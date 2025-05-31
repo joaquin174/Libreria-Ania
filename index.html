@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>INVENTARIO LIBRERIA ANIA</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<title>Inventario - Librería Ania</title>
 <style>
   body {
     margin: 0;
@@ -13,341 +12,211 @@
     background: url('https://i.ibb.co/4ZTTVkgx/papeleria-1-66fe77df-9580-4bae-9e3c-4ce0f59fa290.webp') no-repeat center center fixed;
     background-size: cover;
     color: #00ffff;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   h1 {
     text-align: center;
     text-shadow: 0 0 6px #00ffff;
   }
-  #uploadExcel {
-    display: block;
+  .producto {
+    background: rgba(0, 188, 212, 0.7);
     margin: 1em auto;
+    padding: 1em;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 3px 3px 6px #008ba3, -3px -3px 6px #00ffff;
+  }
+  button.venderBtn {
+    margin-top: 0.5em;
     padding: 0.5em 1em;
-    font-size: 1rem;
-    cursor: pointer;
-    background: linear-gradient(145deg, #00bcd4, #0097a7);
-    border: none;
-    border-radius: 10px;
-    color: white;
-    box-shadow: 4px 4px 6px #007c91, -4px -4px 6px #00d8ff;
-    transition: background 0.3s ease;
-  }
-  #uploadExcel:hover {
-    background: linear-gradient(145deg, #0097a7, #00bcd4);
-  }
-  #btnOpenCell {
-    display: block;
-    margin: 1em auto 2em auto;
-    padding: 0.5em 1.5em;
-    font-size: 1.2rem;
-    cursor: pointer;
-    background: linear-gradient(145deg, #ff4081, #f50057);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    box-shadow: 5px 5px 8px #b0003a, -5px -5px 8px #ff5983;
-    transition: background 0.3s ease;
-  }
-  #btnOpenCell:hover {
-    background: linear-gradient(145deg, #f50057, #ff4081);
-  }
-  table {
-    width: 100%;
-    max-width: 700px;
-    margin: 0 auto 2em auto;
-    border-collapse: collapse;
-    background: rgba(0,0,0,0.3);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 0 15px #00ffffaa;
-  }
-  th, td {
-    padding: 12px 15px;
-    text-align: center;
-    color: #00ffff;
-    border-bottom: 1px solid #00ffff33;
-  }
-  th {
-    background-color: rgba(0, 188, 212, 0.8);
-    text-shadow: 0 0 3px #00e5ff;
-  }
-  button.vender-btn {
-    padding: 6px 12px;
     background: linear-gradient(145deg, #2196f3, #0d47a1);
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     color: white;
     font-weight: bold;
     cursor: pointer;
     box-shadow: 3px 3px 6px #0b3c83, -3px -3px 6px #42a5f5;
     transition: background 0.3s ease;
   }
-  button.vender-btn:hover {
+  button.venderBtn:hover {
     background: linear-gradient(145deg, #0d47a1, #2196f3);
   }
-  /* Alertas en esquina inferior derecha */
-  #alertContainer {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    max-width: 320px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .alert {
-    background: rgba(0, 188, 212, 0.9);
-    border-radius: 12px;
-    color: #001f25;
-    padding: 12px 16px;
-    box-shadow: 0 0 15px #00e5ff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1rem;
-    user-select: none;
-  }
-  .alert span {
-    flex: 1;
-    margin-right: 10px;
-  }
-  .alert button {
-    margin-left: 5px;
-    padding: 4px 10px;
-    font-weight: bold;
-    border-radius: 8px;
-    border: none;
+  #btnCargarExcel {
+    display: block;
+    margin: 1em auto 3em auto;
+    padding: 0.7em 1.5em;
+    font-size: 1.1rem;
     cursor: pointer;
-    box-shadow: 2px 2px 5px #008ba3, -2px -2px 5px #00ffff;
-    background: linear-gradient(145deg, #00acc1, #008ba3);
-    color: #001f25;
-    transition: background 0.3s ease;
-  }
-  .alert button:hover {
-    background: linear-gradient(145deg, #008ba3, #00acc1);
-  }
-  /* Botón para reabrir alerta minimizada */
-  #reopenAlertBtn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: linear-gradient(145deg, #ff4081, #f50057);
+    background: linear-gradient(145deg, #4caf50, #087f23);
     border: none;
-    border-radius: 50px;
+    border-radius: 12px;
     color: white;
     font-weight: bold;
-    font-size: 1.2rem;
-    padding: 12px 18px;
+    box-shadow: 5px 5px 8px #087f23, -5px -5px 8px #81c784;
+    transition: background 0.3s ease;
+  }
+  #btnCargarExcel:hover {
+    background: linear-gradient(145deg, #087f23, #4caf50);
+  }
+  #btnIrVenderCelular {
+    display: block;
+    margin: 1em auto 3em auto;
+    padding: 0.7em 1.5em;
+    font-size: 1.1rem;
     cursor: pointer;
-    box-shadow: 5px 5px 8px #b0003a, -5px -5px 8px #ff5983;
-    display: none;
-    z-index: 10000;
+    background: linear-gradient(145deg, #ff5722, #bf360c);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 5px 5px 8px #bf360c, -5px -5px 8px #ff8a50;
+    transition: background 0.3s ease;
+  }
+  #btnIrVenderCelular:hover {
+    background: linear-gradient(145deg, #bf360c, #ff5722);
+  }
+  #mensaje {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 1em;
+    text-shadow: 0 0 5px #00ffff;
   }
 </style>
 </head>
 <body>
 
-<h1>INVENTARIO LIBRERIA ANIA</h1>
+<h1>Inventario - Librería Ania</h1>
 
-<input type="file" id="uploadExcel" accept=".xlsx,.xls" />
+<div id="productosContainer"></div>
 
-<button id="btnOpenCell">Vender en Celular</button>
+<input type="file" id="fileInput" accept=".xls,.xlsx" style="display:none" />
+<button id="btnCargarExcel">Cargar archivo Excel</button>
 
-<table id="productosTable">
-  <thead>
-    <tr><th>Producto</th><th>Stock</th><th>Acción</th></tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<button id="btnIrVenderCelular">Ir a Vender en Celular</button>
 
-<div id="alertContainer"></div>
-<button id="reopenAlertBtn">Mostrar Alertas</button>
+<div id="mensaje"></div>
 
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script>
 (() => {
   const MIN_STOCK = 2;
-  const MAX_STOCK = 12;
 
-  let productos = [
-    { id: 1, nombre: 'Cuaderno', stock: 12 },
-    { id: 2, nombre: 'Lápiz', stock: 12 },
-    { id: 3, nombre: 'Bolígrafo', stock: 12 },
-  ];
+  let productos = [];
 
-  const alertContainer = document.getElementById('alertContainer');
-  const reopenAlertBtn = document.getElementById('reopenAlertBtn');
-  const productosTableBody = document.querySelector('#productosTable tbody');
-  const uploadExcel = document.getElementById('uploadExcel');
-  const btnOpenCell = document.getElementById('btnOpenCell');
+  const productosContainer = document.getElementById('productosContainer');
+  const mensaje = document.getElementById('mensaje');
+  const fileInput = document.getElementById('fileInput');
+  const btnCargarExcel = document.getElementById('btnCargarExcel');
+  const btnIrVenderCelular = document.getElementById('btnIrVenderCelular');
 
-  // Alerta estado para controlar
-  const alertStates = {};
-
-  // Speech synthesis setup
-  const synth = window.speechSynthesis;
-  let currentUtterance = null;
-
-  function speak(text) {
-    if (synth.speaking) {
-      synth.cancel();
-    }
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    utterance.volume = 1;
-    currentUtterance = utterance;
-    // Repetir 3 veces con pausas
-    let count = 0;
-    utterance.onend = () => {
-      count++;
-      if (count < 3) {
-        synth.speak(utterance);
-      }
-    };
-    synth.speak(utterance);
-  }
-
-  function stopSpeaking() {
-    if (synth.speaking) synth.cancel();
-  }
-
-  // Guardar y cargar en localStorage para sincronizar con segunda pagina
-  function saveProductos() {
+  // Funciones locales para guardar y cargar productos
+  function guardarProductos() {
     localStorage.setItem('productos', JSON.stringify(productos));
   }
-  function loadProductos() {
+  function cargarProductos() {
     const data = localStorage.getItem('productos');
     if (data) {
       productos = JSON.parse(data);
     }
   }
 
-  function renderProductos() {
-    productosTableBody.innerHTML = '';
-    productos.forEach(prod => {
-      const tr = document.createElement('tr');
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = prod.nombre;
-      const tdStock = document.createElement('td');
-      tdStock.textContent = prod.stock;
-      const tdAccion = document.createElement('td');
+  // Renderizar productos con botón vender
+  function renderizarProductos() {
+    productosContainer.innerHTML = '';
+    productos.forEach(producto => {
+      const div = document.createElement('div');
+      div.className = 'producto';
+      div.innerHTML = `
+        <strong>${producto.nombre}</strong><br>
+        Stock: ${producto.stock} unidades
+      `;
       const btnVender = document.createElement('button');
-      btnVender.classList.add('vender-btn');
-      btnVender.textContent = 'Vender';
-      btnVender.disabled = prod.stock <= MIN_STOCK;
-      btnVender.addEventListener('click', () => venderProducto(prod.id));
-      tdAccion.appendChild(btnVender);
-      tr.appendChild(tdNombre);
-      tr.appendChild(tdStock);
-      tr.appendChild(tdAccion);
-      productosTableBody.appendChild(tr);
+      btnVender.textContent = 'Vender 1 unidad';
+      btnVender.className = 'venderBtn';
+      btnVender.disabled = producto.stock <= MIN_STOCK;
+      btnVender.onclick = () => {
+        if (producto.stock > MIN_STOCK) {
+          producto.stock--;
+          guardarProductos();
+          renderizarProductos();
+          revisarAlertas();
+          broadcastUpdate();
+          mensaje.textContent = 'Venta realizada.';
+        }
+      };
+      div.appendChild(btnVender);
+      productosContainer.appendChild(div);
     });
   }
 
-  // Crear o actualizar alerta individual
-  function crearAlerta(prod) {
-    if (alertStates[prod.id] && alertStates[prod.id].visible) return; // ya visible
+  // Mostrar alerta con input y voz
+  function mostrarAlerta(producto) {
+    if(document.getElementById(`alerta-${producto.id}`)) return;
 
-    // Crear alerta
-    const alertDiv = document.createElement('div');
-    alertDiv.classList.add('alert');
-    alertDiv.id = 'alert-' + prod.id;
+    const alerta = document.createElement('div');
+    alerta.id = `alerta-${producto.id}`;
+    alerta.style.position = 'fixed';
+    alerta.style.bottom = '10px';
+    alerta.style.right = '10px';
+    alerta.style.background = '#ffeb3b';
+    alerta.style.padding = '1em';
+    alerta.style.marginTop = '10px';
+    alerta.style.borderRadius = '10px';
+    alerta.style.boxShadow = '0 0 10px #000';
+    alerta.style.zIndex = 9999;
+    alerta.innerHTML = `
+      <strong>¡Stock mínimo!</strong><br>
+      ${producto.nombre} tiene ${producto.stock} unidades.<br>
+      <input type="number" min="1" placeholder="Cantidad a reponer" id="input-${producto.id}" style="margin-top:8px; padding:4px; width: 120px;" />
+      <br>
+      <button id="btnCerrar-${producto.id}" disabled style="margin-top:8px;">Cerrar alerta</button>
+    `;
+    document.body.appendChild(alerta);
 
-    const span = document.createElement('span');
-    span.textContent = `¡Atención! Producto "${prod.nombre}" con stock bajo: ${prod.stock}`;
+    // Voz con SpeechSynthesis API
+    const mensajeVoz = new SpeechSynthesisUtterance(`Atención. El producto ${producto.nombre} ha llegado a su stock mínimo.`);
+    mensajeVoz.lang = 'es-ES';
+    speechSynthesis.speak(mensajeVoz);
 
-    const btnMin = document.createElement('button');
-    btnMin.textContent = 'Minimizar';
+    const input = document.getElementById(`input-${producto.id}`);
+    const btnCerrar = document.getElementById(`btnCerrar-${producto.id}`);
 
-    const btnCerrar = document.createElement('button');
-    btnCerrar.textContent = 'Cerrar';
+    input.addEventListener('input', () => {
+      const valor = parseInt(input.value, 10);
+      btnCerrar.disabled = isNaN(valor) || valor <= 0;
+    });
 
-    alertDiv.appendChild(span);
-    alertDiv.appendChild(btnMin);
-    alertDiv.appendChild(btnCerrar);
-
-    alertContainer.appendChild(alertDiv);
-
-    alertStates[prod.id] = { visible: true, minimized: false, element: alertDiv };
-
-    speak(`Producto ${prod.nombre} con stock bajo, cantidad ${prod.stock}`);
-
-    btnMin.onclick = () => {
-      alertDiv.style.display = 'none';
-      alertStates[prod.id].minimized = true;
-      alertStates[prod.id].visible = false;
-      checkReopenAlertBtn();
-    };
-
-    btnCerrar.onclick = () => {
-      stopSpeaking();
-      alertContainer.removeChild(alertDiv);
-      alertStates[prod.id] = { visible: false, minimized: false, element: null };
-      reiniciarStock(prod.id);
-      checkReopenAlertBtn();
-    };
-
-    checkReopenAlertBtn();
-  }
-
-  // Verifica si hay alertas minimizadas y muestra el boton
-  function checkReopenAlertBtn() {
-    const anyMinimized = Object.values(alertStates).some(a => a.minimized);
-    reopenAlertBtn.style.display = anyMinimized ? 'block' : 'none';
-  }
-
-  reopenAlertBtn.onclick = () => {
-    // Reabrir todas las alertas minimizadas
-    for (const id in alertStates) {
-      if (alertStates[id].minimized) {
-        alertStates[id].element.style.display = 'flex';
-        alertStates[id].visible = true;
-        alertStates[id].minimized = false;
+    btnCerrar.addEventListener('click', () => {
+      const cantidad = parseInt(input.value, 10);
+      if (!isNaN(cantidad) && cantidad > 0) {
+        producto.stock += cantidad;
+        guardarProductos();
+        renderizarProductos();
+        alerta.remove();
+        speechSynthesis.cancel();
       }
-    }
-    reopenAlertBtn.style.display = 'none';
-  };
-
-  // Vender producto
-  function venderProducto(id) {
-    const prod = productos.find(p => p.id === id);
-    if (!prod) return;
-    if (prod.stock > MIN_STOCK) {
-      prod.stock--;
-      saveProductos();
-      renderProductos();
-      checkAlert(prod);
-      broadcastUpdate();
-    }
+    });
   }
 
-  // Revisar alerta
-  function checkAlert(prod) {
-    if (prod.stock <= MIN_STOCK) {
-      crearAlerta(prod);
-    } else {
-      // Si stock subio, cerrar alerta si existe
-      const alertInfo = alertStates[prod.id];
-      if (alertInfo && alertInfo.element) {
-        alertContainer.removeChild(alertInfo.element);
-        alertStates[prod.id] = { visible: false, minimized: false, element: null };
-        checkReopenAlertBtn();
+  // Revisar alertas para productos con stock bajo o igual a MIN_STOCK
+  function revisarAlertas() {
+    productos.forEach(producto => {
+      if(producto.stock <= MIN_STOCK) {
+        mostrarAlerta(producto);
+      } else {
+        // Si hay alerta pero el stock ya no es mínimo, eliminar alerta si existe
+        const alerta = document.getElementById(`alerta-${producto.id}`);
+        if(alerta) {
+          alerta.remove();
+          speechSynthesis.cancel();
+        }
       }
-    }
+    });
   }
 
-  // Reiniciar stock al maximo y actualizar tabla
-  function reiniciarStock(id) {
-    const prod = productos.find(p => p.id === id);
-    if (!prod) return;
-    prod.stock = MAX_STOCK;
-    saveProductos();
-    renderProductos();
-  }
-
-  // BroadcastChannel para sincronizar con segunda pagina
+  // BroadcastChannel para sincronizar
   const bc = new BroadcastChannel('inventario_libreria_ania');
 
   function broadcastUpdate() {
@@ -355,55 +224,55 @@
   }
 
   bc.onmessage = (ev) => {
-    if (ev.data.type === 'update' && ev.data.productos) {
+    if(ev.data.type === 'update' && ev.data.productos) {
       productos = ev.data.productos;
-      saveProductos();
-      renderProductos();
-      // actualizar alertas
-      productos.forEach(prod => checkAlert(prod));
+      guardarProductos();
+      renderizarProductos();
+      revisarAlertas();
+      mensaje.textContent = '';
     }
   };
 
-  // Cargar desde Excel
-  uploadExcel.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // Excel - procesar archivo
+  function procesarArchivoExcel(e) {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
 
     const reader = new FileReader();
-    reader.onload = function(ev) {
+    reader.onload = (ev) => {
       const data = new Uint8Array(ev.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(sheet);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const nombreHoja = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[nombreHoja];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: ''});
 
-      // jsonData esperado: [{nombre: "Producto", stock: 10}, ...]
-      if (jsonData.length > 0) {
-        productos = jsonData.map((item, i) => ({
-          id: i + 1,
-          nombre: item.nombre || `Producto ${i+1}`,
-          stock: Number(item.stock) || MAX_STOCK
-        }));
-        saveProductos();
-        renderProductos();
-        // actualizar alertas
-        productos.forEach(prod => checkAlert(prod));
-        broadcastUpdate();
-      }
+      // Asumimos que el Excel tiene columnas: id, nombre, stock
+      productos = jsonData.map(item => ({
+        id: Number(item.id),
+        nombre: String(item.nombre),
+        stock: Number(item.stock)
+      }));
+
+      guardarProductos();
+      renderizarProductos();
+      revisarAlertas();
+      broadcastUpdate();
+      mensaje.textContent = 'Lista de productos actualizada desde Excel.';
     };
-    reader.readAsArrayBuffer(file);
-    e.target.value = ''; // reset file input
+    reader.readAsArrayBuffer(archivo);
+  }
+
+  btnCargarExcel.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', procesarArchivoExcel);
+
+  btnIrVenderCelular.addEventListener('click', () => {
+    window.open('vender_celular.html', '_blank');
   });
 
-  btnOpenCell.onclick = () => {
-    window.open('vender_celular.html', '_blank');
-  };
-
-  // Init
-  loadProductos();
-  renderProductos();
-  productos.forEach(prod => checkAlert(prod));
-  checkReopenAlertBtn();
+  // Cargar productos iniciales
+  cargarProductos();
+  renderizarProductos();
+  revisarAlertas();
 
 })();
 </script>
