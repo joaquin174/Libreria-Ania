@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Vender - Modo Celular</title>
   <style>
     body {
@@ -67,6 +67,14 @@
       gap: 10px;
       margin-bottom: 10px;
     }
+    #cantidadInput {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +90,9 @@
       <input type="text" id="buscarIdInput" placeholder="ID del producto..." />
       <button onclick="buscarProductoPorId()">🔍</button>
     </div>
+
+    <!-- Cantidad a vender -->
+    <input type="number" id="cantidadInput" placeholder="Cantidad a vender" min="1" />
 
     <!-- Botones de acción -->
     <button onclick="venderProducto()">🛒 Vender</button>
@@ -109,9 +120,29 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const selector = document.getElementById("producto");
-    const mensajeActualizado = document.getElementById("mensajeActualizado");
-    let productos = [];
+    const productoSelect = document.getElementById('producto');
+    const buscarIdInput = document.getElementById('buscarIdInput');
+    const cantidadInput = document.getElementById('cantidadInput');
+    const mensajeActualizado = document.getElementById('mensajeActualizado');
+    const descargarInformeBtn = document.getElementById('descargarInformeBtn');
+    const qrCanvas = document.getElementById('qrCanvas');
+
+    let productos = {}; // Para almacenar productos cargados
+
+    // Leer productos en tiempo real desde Firebase
+    db.ref('productos').on('value', snapshot => {
+      productos = {};
+      productoSelect.innerHTML = '';
+      snapshot.forEach(child => {
+        const p = child.val();
+        productos[p.id] = p;
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = `${p.nombre} (Stock: ${p.stock})`;
+        productoSelect.appendChild(option);
+      });
+      mostrarMensajeActualizado();
+    });
 
     function mostrarMensajeActualizado() {
       mensajeActualizado.style.display = "block";
@@ -120,101 +151,82 @@
       }, 3000);
     }
 
-    function cargarProductosTiempoReal() {
-      db.ref("productos").on("value", (snapshot) => {
-        productos = [];
-        selector.innerHTML = "";
-        snapshot.forEach(child => {
-          const p = child.val();
-          p.id = child.key; // Asignar el ID desde la clave de Firebase
-          productos.push(p);
-
-          const option = document.createElement("option");
-          option.value = p.id;
-          option.textContent = `${p.nombre} (Stock: ${p.stock})`;
-          if (p.stock <= 1) option.disabled = true;
-          selector.appendChild(option);
-        });
-
-        mostrarMensajeActualizado(); // Mostrar mensaje visual
-      });
+    // Buscar producto por ID y seleccionarlo en el select
+    function buscarProductoPorId() {
+      const id = buscarIdInput.value.trim();
+      if (productos[id]) {
+        productoSelect.value = id;
+      } else {
+        alert('Producto no encontrado con ese ID');
+      }
     }
 
+    // Vender producto (disminuir stock en Firebase)
     function venderProducto() {
-      const id = selector.value;
-      const producto = productos.find(p => p.id === id);
-      if (!producto) return alert("Producto no encontrado");
+      const id = productoSelect.value;
+      const cantidad = parseInt(cantidadInput.value);
 
-      if (producto.stock <= 1) {
-        alert("Stock mínimo alcanzado");
+      if (!id) return alert('Selecciona un producto para vender');
+      if (isNaN(cantidad) || cantidad <= 0) return alert('Ingresa una cantidad válida');
+
+      const producto = productos[id];
+      if (!producto) return alert('Producto no encontrado');
+      if (producto.stock < cantidad) {
+        alert('Stock insuficiente para vender esa cantidad');
         return;
       }
 
-      const nuevoStock = producto.stock - 1;
-      db.ref("productos/" + producto.id).update({ stock: nuevoStock })
-        .then(() => {
-          alert(`Producto "${producto.nombre}" vendido. Stock actual: ${nuevoStock}`);
-        });
+      // Reducir stock en Firebase
+      db.ref('productos/' + id + '/stock').transaction(stockActual => {
+        if (stockActual === null || stockActual < cantidad) return stockActual;
+        return stockActual - cantidad;
+      }).then(() => {
+        cantidadInput.value = '';
+      }).catch(err => alert('Error al vender: ' + err));
     }
 
-    function buscarProductoPorId() {
-      const idBuscado = document.getElementById('buscarIdInput').value.trim();
-      const opciones = selector.options;
-      let encontrado = false;
+    // Descargar informe de productos con stock mínimo (0 o menos)
+    descargarInformeBtn.addEventListener('click', () => {
+      let informe = 'Informe de productos con stock mínimo (0 o menos):\n\n';
+      let encontrados = false;
 
-      for (let i = 0; i < opciones.length; i++) {
-        if (opciones[i].value === idBuscado) {
-          selector.selectedIndex = i;
-          encontrado = true;
-          break;
+      for (const id in productos) {
+        if (productos[id].stock <= 0) {
+          informe += `ID: ${productos[id].id}\nNombre: ${productos[id].nombre}\nStock: ${productos[id].stock}\n\n`;
+          encontrados = true;
         }
       }
 
-      if (!encontrado) {
-        alert("Producto con ese ID no encontrado.");
+      if (!encontrados) {
+        alert('No hay productos con stock mínimo.');
+        return;
       }
-    }
 
-    document.getElementById("descargarInformeBtn").onclick = function () {
-      db.ref("productos").once("value", (snapshot) => {
-        const stockMinimo = [];
-        snapshot.forEach(child => {
-          const p = child.val();
-          if (p.stock <= 1) {
-            stockMinimo.push(p);
-          }
-        });
+      const blob = new Blob([informe], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
 
-        if (stockMinimo.length === 0) {
-          alert("No hay productos con stock mínimo.");
-          return;
-        }
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'informe_stock_minimo.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
 
-        const texto = stockMinimo.map(p =>
-          `ID: ${p.id}\nNombre: ${p.nombre}\nStock: ${p.stock}\n\n`
-        ).join("");
-
-        const blob = new Blob([texto], { type: "text/plain" });
-        const enlace = document.createElement("a");
-        enlace.href = URL.createObjectURL(blob);
-        enlace.download = "informe_stock_minimo.txt";
-        enlace.click();
-      });
-    };
-
+    // Generar código QR para abrir esta página (URL actual)
     function generarQR() {
-      const timestamp = Date.now();
-      const urlConMarca = `${window.location.origin}${window.location.pathname}?t=${timestamp}`;
-
-      new QRious({
-        element: document.getElementById('qrCanvas'),
-        value: urlConMarca,
-        size: 200
+      const qr = new QRious({
+        element: qrCanvas,
+        value: window.location.href,
+        size: 200,
+        backgroundAlpha: 0,
+        foreground: '#00ffff'
       });
     }
 
+    // Generar QR automáticamente al cargar la página
     window.onload = () => {
-      cargarProductosTiempoReal();
       generarQR();
     };
   </script>
