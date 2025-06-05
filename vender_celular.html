@@ -113,7 +113,6 @@
     const mensajeActualizado = document.getElementById("mensajeActualizado");
     let productos = [];
 
-    // Mostrar mensaje flotante de actualización
     function mostrarMensajeActualizado() {
       mensajeActualizado.style.display = "block";
       setTimeout(() => {
@@ -121,13 +120,13 @@
       }, 3000);
     }
 
-    // Cargar productos en tiempo real desde Firebase
     function cargarProductosTiempoReal() {
       db.ref("productos").on("value", (snapshot) => {
         productos = [];
         selector.innerHTML = "";
         snapshot.forEach(child => {
           const p = child.val();
+          p.id = child.key; // Asignar el ID desde la clave de Firebase
           productos.push(p);
 
           const option = document.createElement("option");
@@ -137,11 +136,10 @@
           selector.appendChild(option);
         });
 
-        mostrarMensajeActualizado(); // Mostrar mensaje al actualizar
+        mostrarMensajeActualizado(); // Mostrar mensaje visual
       });
     }
 
-    // Vender producto
     function venderProducto() {
       const id = selector.value;
       const producto = productos.find(p => p.id === id);
@@ -159,7 +157,6 @@
         });
     }
 
-    // Buscar por ID
     function buscarProductoPorId() {
       const idBuscado = document.getElementById('buscarIdInput').value.trim();
       const opciones = selector.options;
@@ -178,7 +175,6 @@
       }
     }
 
-    // Descargar informe de stock mínimo
     document.getElementById("descargarInformeBtn").onclick = function () {
       db.ref("productos").once("value", (snapshot) => {
         const stockMinimo = [];
@@ -206,7 +202,6 @@
       });
     };
 
-    // Generar código QR dinámico con marca temporal
     function generarQR() {
       const timestamp = Date.now();
       const urlConMarca = `${window.location.origin}${window.location.pathname}?t=${timestamp}`;
