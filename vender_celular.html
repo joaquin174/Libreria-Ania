@@ -1,237 +1,174 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Vender en Celular - Librería Ania</title>
-<style>
-  body {
-    margin: 0;
-    padding: 2em;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: url('https://i.ibb.co/4ZTTVkgx/papeleria-1-66fe77df-9580-4bae-9e3c-4ce0f59fa290.webp') no-repeat center center fixed;
-    background-size: cover;
-    color: #00ffff;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  h1 {
-    text-align: center;
-    text-shadow: 0 0 6px #00ffff;
-  }
-  #selectProducto {
-    width: 100%;
-    max-width: 300px;
-    margin: 2em auto 1em auto;
-    display: block;
-    padding: 0.5em;
-    font-size: 1.2rem;
-    border-radius: 12px;
-    border: none;
-    background: rgba(0, 188, 212, 0.8);
-    color: #001f25;
-    box-shadow: inset 2px 2px 6px #008ba3, inset -2px -2px 6px #00ffff;
-    font-weight: bold;
-    text-align-last: center;
-  }
-  #cantidadVenta {
-    display: block;
-    width: 100%;
-    max-width: 300px;
-    margin: 1em auto 0.5em auto;
-    padding: 0.5em;
-    font-size: 1.1rem;
-    border-radius: 12px;
-    border: none;
-    background: rgba(0, 188, 212, 0.8);
-    color: #001f25;
-    box-shadow: inset 2px 2px 6px #008ba3, inset -2px -2px 6px #00ffff;
-    font-weight: bold;
-    text-align: center;
-  }
-  button#btnVender, #btnInforme {
-    display: block;
-    margin: 1em auto 2em auto;
-    padding: 0.7em 1.5em;
-    font-size: 1.1rem;
-    cursor: pointer;
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-    transition: background 0.3s ease;
-  }
-  #btnVender {
-    background: linear-gradient(145deg, #2196f3, #0d47a1);
-    box-shadow: 3px 3px 6px #0b3c83, -3px -3px 6px #42a5f5;
-  }
-  #btnVender:hover {
-    background: linear-gradient(145deg, #0d47a1, #2196f3);
-  }
-  #btnInforme {
-    background: linear-gradient(145deg, #ff4081, #f50057);
-    box-shadow: 5px 5px 8px #b0003a, -5px -5px 8px #ff5983;
-  }
-  #btnInforme:hover {
-    background: linear-gradient(145deg, #f50057, #ff4081);
-  }
-  #mensaje {
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.1rem;
-    margin-top: 1em;
-    text-shadow: 0 0 5px #00ffff;
-  }
-</style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vender - Modo Celular</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://i.ibb.co/4ZTTVkgx/papeleria-1-66fe77df-9580-4bae-9e3c-4ce0f59fa290.webp') no-repeat center center fixed;
+      background-size: cover;
+      backdrop-filter: blur(8px);
+      margin: 0;
+      padding: 20px;
+      color: #fff;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+    select, button, input {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: linear-gradient(145deg, #00f0ff, #0088ff);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      transition: all 0.2s ease-in-out;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    canvas {
+      margin-top: 10px;
+      border: 2px solid white;
+      border-radius: 10px;
+    }
+    .flex {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h2>Vender Producto</h2>
+    
+    <!-- Selector de producto -->
+    <select id="producto"></select>
 
-<h1>Vender en Celular</h1>
+    <!-- Buscador por ID -->
+    <div class="flex">
+      <input type="text" id="buscarIdInput" placeholder="ID del producto..." />
+      <button onclick="buscarProductoPorId()">🔍</button>
+    </div>
 
-<input type="file" id="archivoExcel" accept=".xlsx" style="display: block; margin: 1em auto;" />
+    <!-- Botones de acción -->
+    <button onclick="venderProducto()">🛒 Vender</button>
+    <button id="descargarInformeBtn">📄 Descargar informe stock mínimo</button>
 
-<select id="selectProducto">
-  <option value="">-- Seleccione producto --</option>
-</select>
+    <!-- Botón QR -->
+    <button onclick="generarQR()">📱 Generar QR de esta página</button>
+    <canvas id="qrCanvas"></canvas>
+  </div>
 
-<input type="number" id="cantidadVenta" min="1" placeholder="Cantidad a vender" />
+  <!-- QRious para generar QR -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
 
-<button id="btnVender" disabled>Vender</button>
+  <script>
+    const selector = document.getElementById("producto");
 
-<button id="btnInforme">Descargar Informe Stock Mínimo</button>
+    // Cargar productos desde localStorage
+    function cargarProductos() {
+      const productos = JSON.parse(localStorage.getItem("productos") || "[]");
+      selector.innerHTML = "";
 
-<div id="mensaje"></div>
+      productos.forEach(producto => {
+        const option = document.createElement("option");
+        option.value = producto.id;
+        option.textContent = `${producto.nombre} (Stock: ${producto.stock})`;
 
-<script>
-(() => {
-  const MIN_STOCK = 2;
-  let productos = [];
+        // Desactivar si stock mínimo
+        if (producto.stock <= 1) {
+          option.disabled = true;
+        }
 
-  const selectProducto = document.getElementById('selectProducto');
-  const cantidadVenta = document.getElementById('cantidadVenta');
-  const btnVender = document.getElementById('btnVender');
-  const btnInforme = document.getElementById('btnInforme');
-  const mensaje = document.getElementById('mensaje');
-  const archivoExcel = document.getElementById('archivoExcel');
-
-  const bc = new BroadcastChannel('inventario_libreria_ania');
-
-  function saveProductos() {
-    localStorage.setItem('productos', JSON.stringify(productos));
-  }
-
-  function loadProductos() {
-    const data = localStorage.getItem('productos');
-    if (data) productos = JSON.parse(data);
-  }
-
-  function renderProductos() {
-    selectProducto.innerHTML = '<option value="">-- Seleccione producto --</option>';
-    productos.forEach(prod => {
-      const option = document.createElement('option');
-      option.value = prod.id;
-      option.textContent = `${prod.nombre} (Stock: ${prod.stock})`;
-      option.disabled = prod.stock <= MIN_STOCK;
-      selectProducto.appendChild(option);
-    });
-    btnVender.disabled = true;
-    selectProducto.value = '';
-    cantidadVenta.value = '';
-  }
-
-  function validarBotonVender() {
-    const cantidad = parseInt(cantidadVenta.value, 10);
-    btnVender.disabled = !selectProducto.value || !(cantidad > 0);
-    mensaje.textContent = '';
-  }
-
-  function venderProductoCantidad(id, cantidad) {
-    const prod = productos.find(p => p.id === id);
-    if (!prod) return false;
-    if (prod.stock - cantidad >= MIN_STOCK) {
-      prod.stock -= cantidad;
-      saveProductos();
-      renderProductos();
-      broadcastUpdate();
-      return true;
+        selector.appendChild(option);
+      });
     }
-    return false;
-  }
 
-  function descargarInforme() {
-    const productosMinimos = productos.filter(p => p.stock <= MIN_STOCK);
-    if (productosMinimos.length === 0) {
-      mensaje.textContent = 'No hay productos en stock mínimo.';
-      return;
+    // Vender producto seleccionado
+    function venderProducto() {
+      const idSeleccionado = selector.value;
+      let productos = JSON.parse(localStorage.getItem("productos") || "[]");
+      const index = productos.findIndex(p => p.id === idSeleccionado);
+      if (index !== -1 && productos[index].stock > 0) {
+        productos[index].stock--;
+        localStorage.setItem("productos", JSON.stringify(productos));
+        cargarProductos();
+        alert(`Producto "${productos[index].nombre}" vendido. Stock actual: ${productos[index].stock}`);
+      } else {
+        alert("No se puede vender. Stock mínimo alcanzado.");
+      }
     }
-    let texto = 'Informe de Productos en Stock Mínimo:\n\n';
-    productosMinimos.forEach(p => {
-      texto += `- ${p.nombre}: ${p.stock} unidades\n`;
-    });
-    const blob = new Blob([texto], {type: 'text/plain'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'informe_stock_minimo.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-    mensaje.textContent = 'Informe descargado.';
-  }
 
-  function broadcastUpdate() {
-    bc.postMessage({ type: 'update', productos });
-  }
+    // Buscar producto por ID
+    function buscarProductoPorId() {
+      const idBuscado = document.getElementById('buscarIdInput').value.trim();
+      const opciones = selector.options;
+      let encontrado = false;
 
-  bc.onmessage = (ev) => {
-    if (ev.data.type === 'update' && ev.data.productos) {
-      productos = ev.data.productos;
-      saveProductos();
-      renderProductos();
-      mensaje.textContent = '';
+      for (let i = 0; i < opciones.length; i++) {
+        if (opciones[i].value === idBuscado) {
+          selector.selectedIndex = i;
+          encontrado = true;
+          break;
+        }
+      }
+
+      if (!encontrado) {
+        alert("Producto con ese ID no encontrado.");
+      }
     }
-  };
 
-  selectProducto.addEventListener('change', validarBotonVender);
-  cantidadVenta.addEventListener('input', validarBotonVender);
-
-  btnVender.addEventListener('click', () => {
-    const id = parseInt(selectProducto.value, 10);
-    const cantidad = parseInt(cantidadVenta.value, 10);
-    if (cantidad > 0 && venderProductoCantidad(id, cantidad)) {
-      mensaje.textContent = `Venta realizada: ${cantidad} unidad(es).`;
-      cantidadVenta.value = '';
-      validarBotonVender();
-    } else {
-      mensaje.textContent = 'No se puede vender. Stock mínimo alcanzado o cantidad inválida.';
+    // Generar código QR
+    function generarQR() {
+      new QRious({
+        element: document.getElementById('qrCanvas'),
+        value: window.location.href,
+        size: 200
+      });
     }
-  });
 
-  archivoExcel.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
-      productos = json.map((item, index) => ({
-        id: index + 1,
-        nombre: item.Nombre,
-        stock: Number(item.Stock)
-      }));
-      saveProductos();
-      renderProductos();
-      broadcastUpdate();
+    // Descargar informe de productos con stock mínimo
+    document.getElementById("descargarInformeBtn").onclick = function () {
+      const productos = JSON.parse(localStorage.getItem("productos") || "[]");
+      const stockMinimo = productos.filter(p => p.stock <= 1);
+      if (stockMinimo.length === 0) {
+        alert("No hay productos con stock mínimo.");
+        return;
+      }
+
+      const texto = stockMinimo.map(p =>
+        `ID: ${p.id}\nNombre: ${p.nombre}\nStock: ${p.stock}\n\n`
+      ).join("");
+
+      const blob = new Blob([texto], { type: "text/plain" });
+      const enlace = document.createElement("a");
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = "informe_stock_minimo.txt";
+      enlace.click();
     };
-    reader.readAsArrayBuffer(file);
-  });
 
-  loadProductos();
-  renderProductos();
-})();
-</script>
-
+    // Cargar productos al inicio y generar QR automáticamente
+    window.onload = () => {
+      cargarProductos();
+      generarQR();
+    };
+  </script>
 </body>
 </html>
