@@ -3,261 +3,232 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Inventario - Librería Ania</title>
+  <title>Inventario Librería Ania</title>
   <style>
     body {
-      margin: 0;
-      padding: 2em;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
       background: url('https://i.ibb.co/4ZTTVkgx/papeleria-1-66fe77df-9580-4bae-9e3c-4ce0f59fa290.webp') no-repeat center center fixed;
       background-size: cover;
-      color: #00ffff;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
+      margin: 0;
+      padding: 20px;
+      color: #fff;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
     }
     h1 {
       text-align: center;
-      text-shadow: 0 0 6px #00ffff;
     }
-    .producto {
-      background: rgba(0, 188, 212, 0.7);
-      margin: 1em auto;
-      padding: 1em;
-      max-width: 400px;
-      border-radius: 12px;
-      box-shadow: 3px 3px 6px #008ba3, -3px -3px 6px #00ffff;
-    }
-    button.venderBtn {
-      margin-top: 0.5em;
-      padding: 0.5em 1em;
-      background: linear-gradient(145deg, #2196f3, #0d47a1);
+    input[type="file"] {
+      border-radius: 10px;
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
       border: none;
-      border-radius: 12px;
+    }
+    button {
+      background: linear-gradient(145deg, #00f0ff, #0088ff);
       color: white;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 3px 3px 6px #0b3c83, -3px -3px 6px #42a5f5;
-      transition: background 0.3s ease;
-    }
-    button.venderBtn:hover {
-      background: linear-gradient(145deg, #0d47a1, #2196f3);
-    }
-    #btnCargarExcel, #btnIrVenderCelular {
-      display: block;
-      margin: 1em auto 3em auto;
-      padding: 0.7em 1.5em;
-      font-size: 1.1rem;
-      cursor: pointer;
       border: none;
-      border-radius: 12px;
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin: 5px 5px 5px 0;
+    }
+    #tablaProductos {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #tablaProductos th, #tablaProductos td {
+      padding: 10px;
+      border-bottom: 1px solid #00ffff88;
+      text-align: left;
       color: white;
-      font-weight: bold;
-      transition: background 0.3s ease;
     }
-    #btnCargarExcel {
-      background: linear-gradient(145deg, #4caf50, #087f23);
-      box-shadow: 5px 5px 8px #087f23, -5px -5px 8px #81c784;
+    #tablaProductos th {
+      background: rgba(0, 255, 255, 0.3);
     }
-    #btnCargarExcel:hover {
-      background: linear-gradient(145deg, #087f23, #4caf50);
+    .alerta {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 0, 0, 0.85);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ff0000;
+      z-index: 9999;
+      max-width: 320px;
     }
-    #btnIrVenderCelular {
-      background: linear-gradient(145deg, #ff5722, #bf360c);
-      box-shadow: 5px 5px 8px #bf360c, -5px -5px 8px #ff8a50;
-    }
-    #btnIrVenderCelular:hover {
-      background: linear-gradient(145deg, #bf360c, #ff5722);
-    }
-    #mensaje {
+    .alerta input {
+      width: 60px;
+      margin-top: 10px;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
       text-align: center;
+    }
+    .alerta button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: #00ffff;
+      color: black;
+      border: none;
+      border-radius: 6px;
       font-weight: bold;
-      font-size: 1.1rem;
-      margin-top: 1em;
-      text-shadow: 0 0 5px #00ffff;
+      cursor: pointer;
     }
   </style>
-  <!-- Polyfill para compatibilidad con navegadores antiguos -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+  <div class="container">
+    <h1>Inventario Librería Ania</h1>
 
-<h1>Inventario - Librería Ania</h1>
+    <button id="btnAbrirVender">Ir a vender en celular</button>
+    <input type="file" id="inputExcel" accept=".xlsx,.xls" />
 
-<div id="productosContainer"></div>
+    <table id="tablaProductos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Stock</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-<input type="file" id="fileInput" accept=".xls,.xlsx" style="display:none" />
-<button id="btnCargarExcel">Cargar archivo Excel</button>
-<button id="btnIrVenderCelular">Ir a Vender en Celular</button>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-<div id="mensaje"></div>
-
-<script>
-(() => {
-  const MIN_STOCK = 2;
-  let productos = [];
-
-  const productosContainer = document.getElementById('productosContainer');
-  const mensaje = document.getElementById('mensaje');
-  const fileInput = document.getElementById('fileInput');
-  const btnCargarExcel = document.getElementById('btnCargarExcel');
-  const btnIrVenderCelular = document.getElementById('btnIrVenderCelular');
-
-  function guardarProductos() {
-    localStorage.setItem('productos', JSON.stringify(productos));
-  }
-
-  function cargarProductos() {
-    const data = localStorage.getItem('productos');
-    if (data) {
-      productos = JSON.parse(data);
-    }
-  }
-
-  function renderizarProductos() {
-    productosContainer.innerHTML = '';
-    productos.forEach(producto => {
-      const div = document.createElement('div');
-      div.className = 'producto';
-      div.innerHTML = `
-        <strong>${producto.nombre}</strong><br>
-        Stock: ${producto.stock} unidades
-      `;
-      const btnVender = document.createElement('button');
-      btnVender.textContent = 'Vender 1 unidad';
-      btnVender.className = 'venderBtn';
-      btnVender.disabled = producto.stock <= MIN_STOCK;
-      btnVender.onclick = () => {
-        if (producto.stock > MIN_STOCK) {
-          producto.stock--;
-          guardarProductos();
-          renderizarProductos();
-          revisarAlertas();
-          broadcastUpdate();
-          mensaje.textContent = 'Venta realizada.';
-        }
-      };
-      div.appendChild(btnVender);
-      productosContainer.appendChild(div);
-    });
-  }
-
-  function mostrarAlerta(producto) {
-    if (document.getElementById(`alerta-${producto.id}`)) return;
-
-    const alerta = document.createElement('div');
-    alerta.id = `alerta-${producto.id}`;
-    alerta.style.position = 'fixed';
-    alerta.style.bottom = '10px';
-    alerta.style.right = '10px';
-    alerta.style.background = '#ffeb3b';
-    alerta.style.padding = '1em';
-    alerta.style.marginTop = '10px';
-    alerta.style.borderRadius = '10px';
-    alerta.style.boxShadow = '0 0 10px #000';
-    alerta.style.zIndex = 9999;
-    alerta.innerHTML = `
-      <strong>¡Stock mínimo!</strong><br>
-      ${producto.nombre} tiene ${producto.stock} unidades.<br>
-      <input type="number" min="1" placeholder="Cantidad a reponer" id="input-${producto.id}" style="margin-top:8px; padding:4px; width: 120px;" />
-      <br>
-      <button id="btnCerrar-${producto.id}" disabled style="margin-top:8px;">Cerrar alerta</button>
-    `;
-    document.body.appendChild(alerta);
-
-    const mensajeVoz = new SpeechSynthesisUtterance(`Atención. El producto ${producto.nombre} ha llegado a su stock mínimo.`);
-    mensajeVoz.lang = 'es-ES';
-    speechSynthesis.speak(mensajeVoz);
-
-    const input = document.getElementById(`input-${producto.id}`);
-    const btnCerrar = document.getElementById(`btnCerrar-${producto.id}`);
-
-    input.addEventListener('input', () => {
-      const valor = parseInt(input.value, 10);
-      btnCerrar.disabled = isNaN(valor) || valor <= 0;
-    });
-
-    btnCerrar.addEventListener('click', () => {
-      const cantidad = parseInt(input.value, 10);
-      if (!isNaN(cantidad) && cantidad > 0) {
-        producto.stock += cantidad;
-        guardarProductos();
-        renderizarProductos();
-        alerta.remove();
-        speechSynthesis.cancel();
-      }
-    });
-  }
-
-  function revisarAlertas() {
-    productos.forEach(producto => {
-      if (producto.stock <= MIN_STOCK) {
-        mostrarAlerta(producto);
-      } else {
-        const alerta = document.getElementById(`alerta-${producto.id}`);
-        if (alerta) {
-          alerta.remove();
-          speechSynthesis.cancel();
-        }
-      }
-    });
-  }
-
-  const bc = new BroadcastChannel('inventario_libreria_ania');
-
-  function broadcastUpdate() {
-    bc.postMessage({ type: 'update', productos });
-  }
-
-  bc.onmessage = (ev) => {
-    if (ev.data.type === 'update' && ev.data.productos) {
-      productos = ev.data.productos;
-      guardarProductos();
-      renderizarProductos();
-      revisarAlertas();
-      mensaje.textContent = '';
-    }
-  };
-
-  function procesarArchivoExcel(e) {
-    const archivo = e.target.files[0];
-    if (!archivo) return;
-
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const data = new Uint8Array(ev.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const nombreHoja = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[nombreHoja];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-      productos = jsonData.map(item => ({
-        id: Number(item.id),
-        nombre: String(item.nombre),
-        stock: Number(item.stock)
-      }));
-
-      guardarProductos();
-      renderizarProductos();
-      revisarAlertas();
-      broadcastUpdate();
-      mensaje.textContent = 'Lista de productos actualizada desde Excel.';
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBSQNw0r_Il7lqG6mwGDchPX3dkEFnaPeQ",
+      authDomain: "libreria-ania.firebaseapp.com",
+      databaseURL: "https://libreria-ania-default-rtdb.firebaseio.com",
+      projectId: "libreria-ania",
     };
-    reader.readAsArrayBuffer(archivo);
-  }
 
-  btnCargarExcel.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', procesarArchivoExcel);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-  btnIrVenderCelular.addEventListener('click', () => {
-    window.open('vender_celular.html', '_blank');
-  });
+    const inputExcel = document.getElementById('inputExcel');
+    const tablaBody = document.querySelector('#tablaProductos tbody');
+    const btnAbrirVender = document.getElementById('btnAbrirVender');
 
-  cargarProductos();
-  renderizarProductos();
-  revisarAlertas();
-})();
-</script>
+    btnAbrirVender.addEventListener('click', () => {
+      window.open('vender_celular.html', '_blank');
+    });
+
+    inputExcel.addEventListener('change', (e) => {
+      const archivo = e.target.files[0];
+      if (!archivo) return;
+
+      const lector = new FileReader();
+      lector.onload = function(event) {
+        const datos = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(datos, { type: 'array' });
+        const nombreHoja = workbook.SheetNames[0];
+        const hoja = workbook.Sheets[nombreHoja];
+        const jsonProductos = XLSX.utils.sheet_to_json(hoja);
+
+        const updates = {};
+        jsonProductos.forEach(prod => {
+          if (prod.id && prod.nombre && prod.stock !== undefined) {
+            updates['productos/' + prod.id] = {
+              id: prod.id,
+              nombre: prod.nombre,
+              stock: Number(prod.stock)
+            };
+          }
+        });
+
+        db.ref().update(updates)
+          .then(() => alert("Productos actualizados correctamente"))
+          .catch(err => alert("Error al subir productos: " + err));
+      };
+      lector.readAsArrayBuffer(archivo);
+    });
+
+    function mostrarAlerta(producto) {
+      const alerta = document.createElement('div');
+      alerta.className = 'alerta';
+      alerta.innerHTML = `
+        ¡Stock mínimo para <strong>${producto.nombre}</strong> (ID: ${producto.id})!<br>
+        <label>Reponer:</label> <input type="number" min="1" id="cantidadInput" /><br>
+        <button id="cerrarAlerta">Actualizar</button>
+      `;
+      document.body.appendChild(alerta);
+
+      const synth = window.speechSynthesis;
+      const mensaje = new SpeechSynthesisUtterance(`Alerta, el producto ${producto.nombre} tiene stock mínimo.`);
+      mensaje.lang = 'es-ES';
+      synth.speak(mensaje);
+
+      alerta.querySelector('#cerrarAlerta').onclick = () => {
+        const cantidad = parseInt(alerta.querySelector('#cantidadInput').value);
+        if (isNaN(cantidad) || cantidad <= 0) {
+          alert('Ingrese una cantidad válida para reponer.');
+          return;
+        }
+
+        db.ref('productos/' + producto.id + '/stock').transaction(actual => {
+          return (actual || 0) + cantidad;
+        });
+
+        alerta.remove();
+      };
+    }
+
+    function renderizarProductos(snapshot) {
+      tablaBody.innerHTML = '';
+      snapshot.forEach(child => {
+        const p = child.val();
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.nombre}</td>
+          <td>${p.stock}</td>
+          <td><button data-id="${p.id}">Vender</button></td>
+        `;
+        tablaBody.appendChild(fila);
+
+        if (p.stock <= 0) {
+          mostrarAlerta(p);
+        }
+      });
+
+      tablaBody.querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.getAttribute('data-id');
+          db.ref('productos/' + id + '/stock').transaction(stock => {
+            if (stock === null) return 0;
+            if (stock <= 0) return 0;
+            return stock - 1;
+          });
+        };
+      });
+    }
+
+    db.ref('productos').on('value', snapshot => {
+      renderizarProductos(snapshot);
+    });
+  </script>
 </body>
 </html>
