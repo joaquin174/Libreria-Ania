@@ -21,6 +21,21 @@
       max-width: 400px;
       margin: auto;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      position: relative;
+    }
+    #mensajeActualizado {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #00ffb3;
+      color: #000;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      display: none;
+      font-size: 14px;
+      box-shadow: 0 0 8px #00ffb3;
     }
     select, button, input {
       width: 100%;
@@ -56,6 +71,7 @@
 </head>
 <body>
   <div class="container">
+    <div id="mensajeActualizado">Productos actualizados ✅</div>
     <h2>Vender Producto</h2>
 
     <!-- Selector de producto -->
@@ -90,16 +106,24 @@
       projectId: "libreria-ania",
     };
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const selector = document.getElementById("producto");
+    const mensajeActualizado = document.getElementById("mensajeActualizado");
     let productos = [];
 
-    // Cargar productos desde Firebase
-    function cargarProductos() {
-      db.ref("productos").once("value", (snapshot) => {
+    // Mostrar mensaje flotante de actualización
+    function mostrarMensajeActualizado() {
+      mensajeActualizado.style.display = "block";
+      setTimeout(() => {
+        mensajeActualizado.style.display = "none";
+      }, 3000);
+    }
+
+    // Cargar productos en tiempo real desde Firebase
+    function cargarProductosTiempoReal() {
+      db.ref("productos").on("value", (snapshot) => {
         productos = [];
         selector.innerHTML = "";
         snapshot.forEach(child => {
@@ -112,6 +136,8 @@
           if (p.stock <= 1) option.disabled = true;
           selector.appendChild(option);
         });
+
+        mostrarMensajeActualizado(); // Mostrar mensaje al actualizar
       });
     }
 
@@ -130,7 +156,6 @@
       db.ref("productos/" + producto.id).update({ stock: nuevoStock })
         .then(() => {
           alert(`Producto "${producto.nombre}" vendido. Stock actual: ${nuevoStock}`);
-          cargarProductos();
         });
     }
 
@@ -193,9 +218,8 @@
       });
     }
 
-    // Cargar al iniciar
     window.onload = () => {
-      cargarProductos();
+      cargarProductosTiempoReal();
       generarQR();
     };
   </script>
